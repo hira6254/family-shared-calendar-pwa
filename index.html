@@ -277,6 +277,54 @@
 <body>
 
   <!-- 合言葉PINモーダル（初回のみ表示。記憶済みまたはURLトークン付きなら最初から非表示！） -->
+  <!-- 👩🔒 ママ専用シークレットPINモーダル（初回は奥様が好きな4桁を設定、以降は認証のみ） -->
+  <div id="mamaPinModal" class="pin-overlay hidden">
+    <div class="pin-box">
+      <div style="font-size:30px;">👩🔒</div>
+      <div id="mamaPinTitle" class="title-main" style="margin-top:6px;">ママ専用モード切替</div>
+      <p id="mamaPinDesc" class="sub-text">ママの内緒のスケジュールを守るため、ママ専用の4桁暗証番号を設定してください（パパのスマホからは時間のみ表示になります）。</p>
+      <input id="mamaPinInput" type="password" inputmode="numeric" maxlength="8" placeholder="ママ専用4桁PIN" class="input-field" style="text-align:center;font-size:18px;letter-spacing:4px;" />
+      <div id="mamaPinError" style="color:#c92a49;font-size:12px;margin-top:6px;"></div>
+      <div style="display:flex;gap:6px;margin-top:12px;">
+        <button onclick="closeMamaPinModal()" class="btn" style="flex:1;padding:10px;">キャンセル</button>
+        <button onclick="confirmMamaPinModal()" class="btn btn-rose" style="flex:1;padding:10px;">👩 ママモードへ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✏️ 予定の編集モーダル -->
+  <div id="editEventModal" class="pin-overlay hidden">
+    <div class="pin-box" style="text-align:left;max-width:380px;">
+      <div class="row-between" style="margin-bottom:8px;">
+        <div class="title-main" style="font-size:15px;">✏️ 予定を編集</div>
+        <button onclick="closeEditEventModal()" class="btn" style="padding:4px 9px;">✕</button>
+      </div>
+      <input id="editEventId" type="hidden" />
+      <div style="margin-bottom:8px;">
+        <label class="sub-text">時間帯</label>
+        <input id="editEventTime" type="text" class="input-field" />
+      </div>
+      <div style="margin-bottom:8px;">
+        <label class="sub-text">予定タイトル</label>
+        <input id="editEventTitle" type="text" class="input-field" />
+      </div>
+      <div style="margin-bottom:8px;">
+        <label class="sub-text">カテゴリー</label>
+        <select id="editEventCat" class="input-field">
+          <option value="family">🟠 家族</option>
+          <option value="kids">🏫 息子(小1)</option>
+          <option value="mama">🔴 ママ</option>
+          <option value="mama_secret">🔒 ママ内緒（パパには時間のみ）</option>
+          <option value="papa">🔵 パパ</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:12px;">
+        <button onclick="deleteFromEditModal()" class="btn" style="color:#c92a49;border-color:#f5d0d8;">🗑️ 削除</button>
+        <button onclick="saveEditEventModal()" class="btn btn-primary" style="flex:1;padding:10px;">💾 保存する</button>
+      </div>
+    </div>
+  </div>
+
   <div id="pinOverlay" class="pin-overlay hidden">
     <div class="pin-box">
       <div style="font-size:32px;">🏡🔐</div>
@@ -387,6 +435,21 @@
           <span class="sub-text">スタンプをタップで交代👇</span>
         </div>
         <div id="dutyGrid" class="duty-grid"></div>
+
+        <!-- ⚡ タブ移動なし！その場で1秒予定追加バー -->
+        <div style="display:flex;gap:5px;align-items:center;margin-bottom:10px;background:var(--bg);padding:6px;border-radius:14px;border:1px solid var(--border);">
+          <select id="quickAddCat" style="border:1px solid var(--border);background:#fff;border-radius:10px;padding:7px 4px;font-size:12px;font-weight:700;">
+            <option value="family">🟠家族</option>
+            <option value="kids">🏫息子</option>
+            <option value="mama">🔴ママ</option>
+            <option value="mama_secret">🔒内緒</option>
+            <option value="papa">🔵パパ</option>
+          </select>
+          <input id="quickAddTime" type="text" placeholder="時間(任意)" style="width:68px;border:1px solid var(--border);background:#fff;border-radius:10px;padding:7px 6px;font-size:12px;" />
+          <input id="quickAddTitle" type="text" placeholder="この日に予定をサッと追加..." style="flex:1;min-width:0;border:1px solid var(--border);background:#fff;border-radius:10px;padding:7px 8px;font-size:12px;" onkeydown="if(event.key==='Enter')submitQuickInlineEvent();" />
+          <button onclick="submitQuickInlineEvent()" class="btn btn-primary" style="padding:7px 11px;white-space:nowrap;">＋追加</button>
+        </div>
+
         <div id="eventList"></div>
       </div>
     </div>
@@ -616,14 +679,14 @@
     </div>
 
     <div class="version-footer">
-      ふたりの家族カレンダー v3.7.0 （大阪府池田市・ご家族専用／完全0円）
+      ふたりの家族カレンダー v3.8.0 （大阪府池田市・ご家族専用／完全0円）
       <div id="sheetLinkWrap" style="margin-top:4px;"></div>
     </div>
   </div>
 
   <script>
     /*
-     * 🏡 ふたりの家族カレンダー v3.7.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
+     * 🏡 ふたりの家族カレンダー v3.8.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
      * 1. 合言葉PIN（1122）を入力した瞬間に0.05秒でロック解除！（通信待ちや権限エラーで絶対にロック画面で止まらない）
      * 2. スマホ本体(localStorage)に即座に保存しつつ、裏側でGoogleスプレッドシートとも自動同期！
      */
@@ -663,7 +726,7 @@
         var tmIso = getTomorrowJstIso();
         var initDb = {
           ok: true,
-          version: "v3.7.0",
+          version: "v3.8.0",
           deviceToken: "LOCAL_AUTO_TOKEN_1122",
           hasGeminiKey: Boolean(localStorage.getItem("family_cal_gemini_key")),
           sheetUrl: "https://docs.google.com/spreadsheets/d/1DrqBuKm0OpvIMZ-JcLiK57MPnnms1Jyb4G366kIlT3o/edit",
@@ -757,6 +820,33 @@
           db.hasGeminiKey = true;
           saveLocalDB(db);
           return { ok: true, hasGeminiKey: true };
+        }
+        if (action === "apiDeleteEvent") {
+          var delId = args[0];
+          db.events = db.events.filter(function(e) { return e.eventId !== delId; });
+          saveLocalDB(db);
+          return db;
+        }
+        if (action === "apiEditEvent") {
+          var ep = args[0] || {};
+          for (var ei = 0; ei < db.events.length; ei++) {
+            if (db.events[ei].eventId === ep.eventId) {
+              if (ep.title !== undefined) db.events[ei].title = ep.title;
+              if (ep.timeSlot !== undefined) db.events[ei].timeSlot = ep.timeSlot;
+              if (ep.category !== undefined) db.events[ei].category = ep.category;
+              if (ep.note !== undefined) db.events[ei].note = ep.note;
+              if (ep.isMamaSecret !== undefined) db.events[ei].isMamaSecret = ep.isMamaSecret;
+              break;
+            }
+          }
+          saveLocalDB(db);
+          return db;
+        }
+        if (action === "apiDeleteMemo") {
+          var delMid = args[0];
+          db.memos = db.memos.filter(function(m) { return m.memoId !== delMid; });
+          saveLocalDB(db);
+          return db;
         }
         if (action === "apiSaveGcalSyncConfig") {
           var cfg0 = args[0] || {};
@@ -969,7 +1059,8 @@
           "apiUpdateEventStatus", "apiToggleDailyDuty", "apiCreateGrade1HomeworkPack",
           "apiSaveIkedaTrashSchedule", "apiSendThanksStamp", "apiAddMemo",
           "apiBatchAddShoppingItems", "apiToggleMemoDone", "apiAddAnniversary",
-          "apiScanPrintImage", "apiParseMagicText", "apiSuggestDinnerMenus", "apiSaveGcalSyncConfig"
+          "apiScanPrintImage", "apiParseMagicText", "apiSuggestDinnerMenus", "apiSaveGcalSyncConfig",
+          "apiDeleteEvent", "apiEditEvent", "apiDeleteMemo"
         ];
         var runner = {
           withSuccessHandler: function(fn) { return makeRunner(fn, onFailure); },
@@ -1775,8 +1866,40 @@
           };
         }
 
+        var rightActions = document.createElement('div');
+        rightActions.style.display = 'flex';
+        rightActions.style.alignItems = 'center';
+        rightActions.style.gap = '4px';
+        rightActions.appendChild(whoBtn);
+
+        if (!isSecretForViewer && !ev.isExternalGcal) {
+          var editBtn = document.createElement('button');
+          editBtn.className = 'btn';
+          editBtn.style.padding = '5px 8px';
+          editBtn.style.fontSize = '11px';
+          editBtn.textContent = '✏️';
+          editBtn.onclick = function() { openEditEventModal(ev); };
+          rightActions.appendChild(editBtn);
+
+          var delBtn = document.createElement('button');
+          delBtn.className = 'btn';
+          delBtn.style.padding = '5px 8px';
+          delBtn.style.fontSize = '11px';
+          delBtn.textContent = '🗑️';
+          delBtn.onclick = function() {
+            setToast('🗑️ 予定を削除中...');
+            google.script.run
+              .withSuccessHandler(function(res) {
+                applyServerState(res);
+                setToast('🗑️「' + ev.title + '」を削除しました');
+              })
+              .apiDeleteEvent(currentPin, ev.eventId);
+          };
+          rightActions.appendChild(delBtn);
+        }
+
         topRow.appendChild(leftInfo);
-        topRow.appendChild(whoBtn);
+        topRow.appendChild(rightActions);
         item.appendChild(topRow);
 
         if (!isSecretForViewer && ev.checklist && ev.checklist.length > 0) {
@@ -1998,15 +2121,140 @@
 
     function toggleDeviceOwnerRole() {
       var cur = getDeviceOwnerRole();
-      var next = cur === 'papa' ? 'mama' : 'papa';
-      try { localStorage.setItem('family_cal_owner_role', next); } catch (e) {}
+      if (cur === 'mama') {
+        try { localStorage.setItem('family_cal_owner_role', 'papa'); } catch (e) {}
+        updateRoleSwitchButtonUi();
+        renderAll();
+        setToast('👨「パパ」表示に切替：ママの🔒内緒予定は『時間のみ』でロックされました');
+        return;
+      }
+      /* パパ表示→ママ表示への切替時はママ専用4桁PINを確認 */
+      var savedMamaPin = '';
+      try { savedMamaPin = localStorage.getItem('family_cal_mama_secret_pin') || ''; } catch (e) {}
+      var modal = document.getElementById('mamaPinModal');
+      var titleEl = document.getElementById('mamaPinTitle');
+      var descEl = document.getElementById('mamaPinDesc');
+      document.getElementById('mamaPinInput').value = '';
+      document.getElementById('mamaPinError').textContent = '';
+      if (!savedMamaPin) {
+        titleEl.textContent = '👩🔒 ママ専用暗証番号の初回設定';
+        descEl.textContent = 'ママだけの4桁暗証番号（お好きな数字）を決めて入力してください。次回からこの番号を知っている人だけがママの🔒内緒予定を見られます。';
+      } else {
+        titleEl.textContent = '👩🔒 ママ専用モードのロック解除';
+        descEl.textContent = 'ママが設定した専用暗証番号を入力してください（パパのスマホでは内緒の予定は時間のみ表示されます）。';
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function closeMamaPinModal() {
+      document.getElementById('mamaPinModal').classList.add('hidden');
+    }
+
+    function confirmMamaPinModal() {
+      var inp = document.getElementById('mamaPinInput').value.trim();
+      if (!inp) {
+        document.getElementById('mamaPinError').textContent = '暗証番号を入力してください';
+        return;
+      }
+      var savedMamaPin = '';
+      try { savedMamaPin = localStorage.getItem('family_cal_mama_secret_pin') || ''; } catch (e) {}
+      if (!savedMamaPin) {
+        try { localStorage.setItem('family_cal_mama_secret_pin', inp); } catch (e) {}
+      } else if (inp !== savedMamaPin) {
+        document.getElementById('mamaPinError').textContent = 'ママ専用暗証番号が違います🔒';
+        return;
+      }
+      try { localStorage.setItem('family_cal_owner_role', 'mama'); } catch (e) {}
+      closeMamaPinModal();
       updateRoleSwitchButtonUi();
       renderAll();
-      if (next === 'mama') {
-        setToast('👩「ママのスマホ」モードに切替：ママの🔒秘密予定タイトルもすべて表示されます');
-      } else {
-        setToast('👨「パパのスマホ」モードに切替：ママの🔒秘密予定は『時間のみ』で保護されます');
+      setToast('👩「ママ」専用モードに切り替えました（🔒内緒予定もすべて表示＆編集できます）');
+    }
+
+    function submitQuickInlineEvent() {
+      var titleEl = document.getElementById('quickAddTitle');
+      var timeEl = document.getElementById('quickAddTime');
+      var catEl = document.getElementById('quickAddCat');
+      var titleVal = titleEl.value.trim();
+      if (!titleVal) {
+        setToast('予定のタイトルを入力してください');
+        return;
       }
+      var timeVal = timeEl.value.trim() || '終日';
+      var rawCat = catEl.value;
+      var isSec = rawCat === 'mama_secret';
+      var finalCat = isSec ? 'mama' : rawCat;
+      var who = finalCat === 'papa' ? '👨パパお願い！' : (finalCat === 'mama' ? '👩ママ担当' : '🤝ふたりで');
+      var targetDate = selectedDateIso || formatIsoLocal(new Date());
+
+      titleEl.value = '';
+      timeEl.value = '';
+      setToast('⚡ 予定を追加中...');
+      google.script.run
+        .withSuccessHandler(function(res) {
+          applyServerState(res);
+          setToast(isSec ? '🔒 ママ内緒予定を追加しました（パパには時間のみ表示）' : '⚡「' + titleVal + '」を追加しました！');
+        })
+        .apiAddEvent(currentPin, {
+          date: targetDate,
+          timeSlot: timeVal,
+          category: finalCat,
+          title: titleVal,
+          assignee: who,
+          checklist: [],
+          note: isSec ? '[MAMA_SECRET]' : '',
+          isMamaSecret: isSec
+        });
+    }
+
+    function openEditEventModal(ev) {
+      document.getElementById('editEventId').value = ev.eventId;
+      document.getElementById('editEventTime').value = ev.timeSlot || '終日';
+      document.getElementById('editEventTitle').value = ev.title || '';
+      var isSec = Boolean(ev.isMamaSecret) || String(ev.note || '').indexOf('[MAMA_SECRET]') !== -1;
+      document.getElementById('editEventCat').value = isSec ? 'mama_secret' : (ev.category || 'family');
+      document.getElementById('editEventModal').classList.remove('hidden');
+    }
+
+    function closeEditEventModal() {
+      document.getElementById('editEventModal').classList.add('hidden');
+    }
+
+    function saveEditEventModal() {
+      var eid = document.getElementById('editEventId').value;
+      var tSlot = document.getElementById('editEventTime').value.trim() || '終日';
+      var titleVal = document.getElementById('editEventTitle').value.trim();
+      var rawCat = document.getElementById('editEventCat').value;
+      if (!titleVal) return;
+      var isSec = rawCat === 'mama_secret';
+      var finalCat = isSec ? 'mama' : rawCat;
+      closeEditEventModal();
+      setToast('✏️ 予定を更新中...');
+      google.script.run
+        .withSuccessHandler(function(res) {
+          applyServerState(res);
+          setToast('✏️ 予定を更新しました！');
+        })
+        .apiEditEvent(currentPin, {
+          eventId: eid,
+          timeSlot: tSlot,
+          title: titleVal,
+          category: finalCat,
+          note: isSec ? '[MAMA_SECRET]' : '',
+          isMamaSecret: isSec
+        });
+    }
+
+    function deleteFromEditModal() {
+      var eid = document.getElementById('editEventId').value;
+      closeEditEventModal();
+      setToast('🗑️ 予定を削除中...');
+      google.script.run
+        .withSuccessHandler(function(res) {
+          applyServerState(res);
+          setToast('🗑️ 予定を削除しました');
+        })
+        .apiDeleteEvent(currentPin, eid);
     }
 
 
@@ -2235,6 +2483,18 @@
           };
           row.appendChild(planBtn);
         }
+
+        var delMemoBtn = document.createElement('button');
+        delMemoBtn.className = 'btn';
+        delMemoBtn.style.padding = '4px 8px';
+        delMemoBtn.style.fontSize = '11px';
+        delMemoBtn.textContent = '🗑️';
+        delMemoBtn.onclick = function() {
+          google.script.run
+            .withSuccessHandler(function(res) { applyServerState(res); })
+            .apiDeleteMemo(currentPin, m.memoId);
+        };
+        row.appendChild(delMemoBtn);
 
         box.appendChild(row);
       });
