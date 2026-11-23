@@ -301,81 +301,86 @@
       <button id="pwaInstallBtn" onclick="triggerPwaInstall()" class="btn btn-primary" style="white-space:nowrap;padding:8px 12px;">インストール</button>
     </div>
 
-    <!-- ヘッダー ＆ 💐ありがとうご褒美メーター -->
-    <div class="header-card">
+    <!-- スッキリ1行ヘッダー -->
+    <div class="header-card" style="padding:10px 12px;margin-bottom:8px;">
       <div class="row-between">
-        <div>
-          <div class="title-main">🏡 ふたりの家族カレンダー</div>
-          <div id="toastBar" class="sub-text">📍大阪府池田市のお天気と予定を読み込み中...</div>
-        </div>
-        <div style="display:flex;gap:5px;align-items:center;">
-          <button id="roleSwitchBtn" onclick="toggleDeviceOwnerRole()" class="btn" style="padding:6px 10px;font-size:11px;border-color:#9ed2f6;background:#e8f4fd;color:#0b69a3;">
-            👨 パパのスマホ
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="title-main" style="font-size:15px;">🏡 家族カレンダー</span>
+          <button onclick="toggleDrawer('thanksDrawerBox')" class="btn" style="padding:3px 8px;font-size:11px;background:#fdecef;color:#c92a49;border-color:#f5d0d8;">
+            💐 <span id="thanksCountText">14/20</span>
           </button>
-          <button id="workBtn" onclick="toggleWorkOverlay()" class="btn btn-work-on" style="padding:6px 10px;font-size:11px;">💼 仕事重ね: ON</button>
+        </div>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <button id="roleSwitchBtn" onclick="toggleDeviceOwnerRole()" class="btn" style="padding:4px 8px;font-size:11px;border-color:#9ed2f6;background:#e8f4fd;color:#0b69a3;">
+            👨 パパ
+          </button>
+          <button id="workBtn" onclick="toggleWorkOverlay()" class="btn btn-work-on" style="padding:4px 8px;font-size:11px;">💼 仕事:ON</button>
         </div>
       </div>
+      <div id="toastBar" class="sub-text" style="font-size:11px;margin-top:2px;"></div>
 
-      <!-- 💐 ありがとうポイント＆ご褒美メーター -->
-      <div class="thanks-bar-box">
+      <!-- 💐 助け合いメーター引き出し（普段は閉じてスッキリ！タップで開く） -->
+      <div id="thanksDrawerBox" class="thanks-bar-box hidden">
         <div class="row-between">
-          <div style="font-size:12px;font-weight:800;color:#c92a49;">
-            💐 助け合いメーター：<span id="thanksCountText">14 / 20</span>
-          </div>
-          <button onclick="sendQuickThanks()" class="btn btn-rose" style="padding:4px 10px;font-size:11px;">
-            💝 ありがとうを送る
-          </button>
+          <span id="thanksRewardText" style="font-size:11px;font-weight:800;color:#c92a49;">🎁 ご褒美：☕ 週末スタバ＆ケーキ</span>
+          <button onclick="sendQuickThanks()" class="btn btn-rose" style="padding:4px 10px;font-size:11px;">💝 ありがとうを送る (+1)</button>
         </div>
-        <div class="meter-track">
-          <div id="thanksMeterFill" class="meter-fill" style="width:70%;"></div>
-        </div>
-        <div class="row-between" style="font-size:11px;color:var(--muted);">
-          <span id="thanksRewardText">🎁 目標ご褒美：☕ 週末ご褒美スタバ＆ケーキ</span>
-          <span id="thanksLastMsg" style="max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-        </div>
-      </div>
-
-      <div class="filter-row">
-        <button id="f-all" onclick="setCatFilter('all')" class="filter-chip active">すべて</button>
-        <button id="f-family" onclick="setCatFilter('family')" class="filter-chip cat-family">🟠 家族</button>
-        <button id="f-kids" onclick="setCatFilter('kids')" class="filter-chip cat-kids">🏫 息子さん(小1)</button>
-        <button id="f-mama" onclick="setCatFilter('mama')" class="filter-chip cat-mama">🔴 ママ</button>
-        <button id="f-papa" onclick="setCatFilter('papa')" class="filter-chip cat-papa">🔵 パパ</button>
+        <div class="meter-track"><div id="thanksMeterFill" class="meter-fill" style="width:70%;"></div></div>
+        <div id="thanksLastMsg" class="sub-text" style="font-size:11px;"></div>
       </div>
     </div>
 
-    <!-- 5つのナビゲーションタブ -->
-    <div class="tabs">
-      <button id="tab-cal" onclick="switchTab('cal')" class="tab-btn active">📅 池田天気・予定</button>
-      <button id="tab-school" onclick="switchTab('school')" class="tab-btn">🏫 小1宿題・お便り</button>
+    <!-- ナビゲーションタブ -->
+    <div class="tabs" style="margin-bottom:8px;">
+      <button id="tab-cal" onclick="switchTab('cal')" class="tab-btn active">📅 カレンダー</button>
+      <button id="tab-school" onclick="switchTab('school')" class="tab-btn">🏫 小1・お便り</button>
       <button id="tab-dinner" onclick="switchTab('dinner')" class="tab-btn">🍳 15分献立</button>
-      <button id="tab-add" onclick="switchTab('add')" class="tab-btn">＋ 個別追加</button>
-      <button id="tab-memo" onclick="switchTab('memo')" class="tab-btn">🛒 買物・ゴミ設定</button>
+      <button id="tab-add" onclick="switchTab('add')" class="tab-btn">＋ 予定追加</button>
+      <button id="tab-memo" onclick="switchTab('memo')" class="tab-btn">🛒 メモ・設定</button>
     </div>
 
-    <!-- タブ1: ☀️ 池田市3時間天気＆3人別服装ナビ（一番上に常時表示！）＋ 月間カレンダー -->
+    <!-- タブ1: 開いた瞬間に「大きな月間カレンダー」が一番上に見えるスッキリ画面 -->
     <div id="view-cal">
-      <!-- ☀️ 選択日の「大阪府池田市・3時間ごとの天気＆3人別服装・洗濯・お出かけナビ」を最上部に常時表示！ -->
-      <div id="weatherBannerBox" class="weather-banner">
-        <div style="font-weight:800;font-size:13px;">📍大阪府池田市のお天気＆ご家族3人の服装を計算中...</div>
-      </div>
-
-      <div class="card">
-        <div class="row-between">
-          <div id="currentMonthLabel" style="font-weight:800;font-size:15px;">カレンダー</div>
+      <div class="card" style="padding:10px 10px 12px;">
+        <!-- カレンダー上部：月移動 ＋ ☀️お天気・服装引き出しボタン -->
+        <div class="row-between" style="margin-bottom:6px;">
+          <div id="currentMonthLabel" style="font-weight:800;font-size:16px;">2026年 11月</div>
           <div style="display:flex;gap:4px;">
-            <button onclick="shiftMonth(-1)" class="btn">◀ 前月</button>
-            <button onclick="goToday()" class="btn">今日</button>
-            <button onclick="shiftMonth(1)" class="btn">次月 ▶</button>
+            <button onclick="shiftMonth(-1)" class="btn" style="padding:5px 9px;">◀</button>
+            <button onclick="goToday()" class="btn" style="padding:5px 10px;">今日</button>
+            <button onclick="shiftMonth(1)" class="btn" style="padding:5px 9px;">▶</button>
           </div>
         </div>
+
+        <!-- ☀️ ワンタップで開く「池田市お天気・3人の服装・ゴミ出し」コンパクトバー -->
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <button id="weatherToggleBtn" onclick="toggleDrawer('weatherBannerBox')" class="btn" style="flex:1;background:linear-gradient(135deg,#eef7ff,#fff6ea);border-color:#c5e2f7;display:flex;align-items:center;justify-content:space-between;padding:7px 11px;">
+            <span id="weatherQuickSummary" style="font-weight:800;font-size:12px;">☀️ 池田市の天気・3人の服装を見る</span>
+            <span style="font-size:11px;color:#0b69a3;">▼ 詳細</span>
+          </button>
+          <button onclick="toggleDrawer('filterDrawerBox')" class="btn" style="padding:7px 10px;font-size:11px;">
+            🔍 絞込
+          </button>
+        </div>
+
+        <!-- 🔍 カテゴリー絞り込み引き出し（普段は閉じてスッキリ） -->
+        <div id="filterDrawerBox" class="filter-row hidden" style="padding-top:0;margin-bottom:8px;">
+          <button id="f-all" onclick="setCatFilter('all')" class="filter-chip active">すべて</button>
+          <button id="f-family" onclick="setCatFilter('family')" class="filter-chip cat-family">🟠 家族</button>
+          <button id="f-kids" onclick="setCatFilter('kids')" class="filter-chip cat-kids">🏫 息子(小1)</button>
+          <button id="f-mama" onclick="setCatFilter('mama')" class="filter-chip cat-mama">🔴 ママ</button>
+          <button id="f-papa" onclick="setCatFilter('papa')" class="filter-chip cat-papa">🔵 パパ</button>
+        </div>
+
+        <!-- ☀️ お天気・3時間予報・3人服装・ゴミ出し詳細ドロワー（ボタンを押した時だけ開く！） -->
+        <div id="weatherBannerBox" class="weather-banner hidden"></div>
+        <div id="trashBannerBox" class="trash-banner hidden"></div>
+
+        <!-- 月間カレンダーグリッド（日付と予定の色ドットだけで超スッキリ見やすい！） -->
         <div class="cal-dow-grid">
           <div style="color:#c92a49;">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div style="color:#0b69a3;">土</div>
         </div>
         <div id="monthGrid" class="cal-grid"></div>
-
-        <!-- 🗑️ 選択日の池田市ゴミ出し自動バナー -->
-        <div id="trashBannerBox" class="trash-banner"></div>
 
         <div class="row-between" style="margin-bottom:6px;padding-top:6px;border-top:1px solid var(--border);">
           <div id="selectedDateHeading" style="font-weight:800;">選択日の担当と予定</div>
@@ -611,14 +616,14 @@
     </div>
 
     <div class="version-footer">
-      ふたりの家族カレンダー v3.6.0 （大阪府池田市・ご家族専用／完全0円）
+      ふたりの家族カレンダー v3.7.0 （大阪府池田市・ご家族専用／完全0円）
       <div id="sheetLinkWrap" style="margin-top:4px;"></div>
     </div>
   </div>
 
   <script>
     /*
-     * 🏡 ふたりの家族カレンダー v3.6.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
+     * 🏡 ふたりの家族カレンダー v3.7.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
      * 1. 合言葉PIN（1122）を入力した瞬間に0.05秒でロック解除！（通信待ちや権限エラーで絶対にロック画面で止まらない）
      * 2. スマホ本体(localStorage)に即座に保存しつつ、裏側でGoogleスプレッドシートとも自動同期！
      */
@@ -658,7 +663,7 @@
         var tmIso = getTomorrowJstIso();
         var initDb = {
           ok: true,
-          version: "v3.6.0",
+          version: "v3.7.0",
           deviceToken: "LOCAL_AUTO_TOKEN_1122",
           hasGeminiKey: Boolean(localStorage.getItem("family_cal_gemini_key")),
           sheetUrl: "https://docs.google.com/spreadsheets/d/1DrqBuKm0OpvIMZ-JcLiK57MPnnms1Jyb4G366kIlT3o/edit",
@@ -1393,7 +1398,7 @@
     function renderThanksBar() {
       var info = appState.thanksInfo || { count: 14, goal: 20, reward: '☕ 週末ご褒美スタバ＆ケーキ', lastMsg: '' };
       var pct = Math.min(100, Math.round((info.count / Math.max(info.goal, 1)) * 100));
-      document.getElementById('thanksCountText').textContent = info.count + ' / ' + info.goal + 'pt (' + pct + '%)';
+      document.getElementById('thanksCountText').textContent = info.count + '/' + info.goal;
       document.getElementById('thanksMeterFill').style.width = pct + '%';
       document.getElementById('thanksRewardText').textContent = '🎁 ご褒美：' + info.reward;
       document.getElementById('thanksLastMsg').textContent = info.lastMsg || '';
@@ -1427,7 +1432,7 @@
     function toggleWorkOverlay() {
       showWorkOverlay = !showWorkOverlay;
       var btn = document.getElementById('workBtn');
-      btn.textContent = showWorkOverlay ? '💼 仕事重ね: ON' : '🏡 仕事重ね: OFF';
+      btn.textContent = showWorkOverlay ? '💼 仕事:ON' : '🏡 仕事:OFF';
       btn.className = showWorkOverlay ? 'btn btn-work-on' : 'btn';
       renderAll();
     }
@@ -1462,12 +1467,22 @@
       renderAll();
     }
 
+    function toggleDrawer(boxId) {
+      var el = document.getElementById(boxId);
+      if (!el) return;
+      el.classList.toggle('hidden');
+      if (boxId === 'weatherBannerBox') {
+        var tr = document.getElementById('trashBannerBox');
+        if (tr) tr.classList.toggle('hidden', el.classList.contains('hidden'));
+      }
+    }
+
     function renderMonthGrid() {
       var grid = document.getElementById('monthGrid');
       grid.innerHTML = '';
       var year = currentMonthDate.getFullYear();
       var month = currentMonthDate.getMonth();
-      document.getElementById('currentMonthLabel').textContent = year + '年 ' + (month + 1) + '月（池田市）';
+      document.getElementById('currentMonthLabel').textContent = year + '年 ' + (month + 1) + '月';
 
       var firstDay = new Date(year, month, 1);
       var startOffset = firstDay.getDay();
@@ -1477,15 +1492,14 @@
         var d = new Date(startCellDate.getFullYear(), startCellDate.getMonth(), startCellDate.getDate() + i);
         if (i >= 35 && d.getMonth() !== month) break;
         var iso = formatIsoLocal(d);
-        var md = ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
         var holidayName = getJapaneseHolidayName(iso);
-        var wInfo = appState.weatherMap && appState.weatherMap[iso];
-        var trashLabel = getIkedaTrashLabelForDow(d.getDay());
 
         var cell = document.createElement('button');
         cell.className = 'day-cell' +
           (d.getMonth() !== month ? ' other-month' : '') +
           (iso === selectedDateIso ? ' selected' : '');
+        cell.style.minHeight = '46px';
+        cell.style.padding = '6px 2px';
 
         cell.onclick = (function(targetIso) {
           return function() {
@@ -1495,65 +1509,19 @@
           };
         })(iso);
 
-        var topLine = document.createElement('div');
-        topLine.style.display = 'flex';
-        topLine.style.alignItems = 'center';
-        topLine.style.justifyContent = 'center';
-        topLine.style.gap = '2px';
-
-        var numDiv = document.createElement('span');
+        var numDiv = document.createElement('div');
         numDiv.style.fontWeight = '800';
-        numDiv.style.fontSize = '12px';
+        numDiv.style.fontSize = '14px';
         if (d.getDay() === 0 || holidayName) {
           numDiv.style.color = '#c92a49';
         } else if (d.getDay() === 6) {
           numDiv.style.color = '#0b69a3';
         }
         numDiv.textContent = String(d.getDate());
-        topLine.appendChild(numDiv);
-
-        if (wInfo) {
-          var wSpan = document.createElement('span');
-          wSpan.style.fontSize = '10px';
-          wSpan.textContent = wInfo.icon;
-          topLine.appendChild(wSpan);
-        }
-        cell.appendChild(topLine);
-
-        if (holidayName) {
-          var holDiv = document.createElement('div');
-          holDiv.style.fontSize = '9px';
-          holDiv.style.color = '#c92a49';
-          holDiv.style.fontWeight = '700';
-          holDiv.style.lineHeight = '1.1';
-          holDiv.style.maxWidth = '100%';
-          holDiv.style.overflow = 'hidden';
-          holDiv.style.whiteSpace = 'nowrap';
-          holDiv.textContent = holidayName.slice(0, 4);
-          cell.appendChild(holDiv);
-        } else if (trashLabel) {
-          var trDiv = document.createElement('div');
-          trDiv.style.fontSize = '8px';
-          trDiv.style.color = '#2b8a3e';
-          trDiv.style.lineHeight = '1.1';
-          trDiv.style.maxWidth = '100%';
-          trDiv.style.overflow = 'hidden';
-          trDiv.style.whiteSpace = 'nowrap';
-          trDiv.textContent = trashLabel.slice(0, 5);
-          cell.appendChild(trDiv);
-        }
+        cell.appendChild(numDiv);
 
         var dotRow = document.createElement('div');
         dotRow.className = 'dot-row';
-
-        for (var a = 0; a < appState.anniversaries.length; a++) {
-          if (appState.anniversaries[a].monthDay === md) {
-            var aSpan = document.createElement('span');
-            aSpan.style.fontSize = '10px';
-            aSpan.textContent = appState.anniversaries[a].icon;
-            dotRow.appendChild(aSpan);
-          }
-        }
 
         var dayEvs = appState.events.filter(function(ev) {
           if (ev.date !== iso) return false;
@@ -1595,7 +1563,11 @@
       var targetIso = selectedDateIso || formatIsoLocal(new Date());
       var w = (appState.weatherMap && appState.weatherMap[targetIso]) || buildIkedaClimateEstimate(targetIso);
 
-      box.classList.remove('hidden');
+      var sumEl = document.getElementById('weatherQuickSummary');
+      if (sumEl) {
+        sumEl.textContent = w.icon + ' 池田市 ' + targetIso.slice(5).replace('-', '/') + '：' + w.label + '（' + w.maxTemp + '℃/' + w.minTemp + '℃）＆服装を見る';
+      }
+
       box.innerHTML = '';
 
       var top = document.createElement('div');
@@ -2012,12 +1984,12 @@
       var btn = document.getElementById('roleSwitchBtn');
       if (!btn) return;
       if (role === 'mama') {
-        btn.textContent = '👩 ママのスマホ';
+        btn.textContent = '👩 ママ';
         btn.style.background = '#fdecef';
         btn.style.color = '#c92a49';
         btn.style.borderColor = '#f5d0d8';
       } else {
-        btn.textContent = '👨 パパのスマホ';
+        btn.textContent = '👨 パパ';
         btn.style.background = '#e8f4fd';
         btn.style.color = '#0b69a3';
         btn.style.borderColor = '#9ed2f6';
