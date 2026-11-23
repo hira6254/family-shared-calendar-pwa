@@ -308,7 +308,12 @@
           <div class="title-main">🏡 ふたりの家族カレンダー</div>
           <div id="toastBar" class="sub-text">📍大阪府池田市のお天気と予定を読み込み中...</div>
         </div>
-        <button id="workBtn" onclick="toggleWorkOverlay()" class="btn btn-work-on">💼 仕事重ね: ON</button>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <button id="roleSwitchBtn" onclick="toggleDeviceOwnerRole()" class="btn" style="padding:6px 10px;font-size:11px;border-color:#9ed2f6;background:#e8f4fd;color:#0b69a3;">
+            👨 パパのスマホ
+          </button>
+          <button id="workBtn" onclick="toggleWorkOverlay()" class="btn btn-work-on" style="padding:6px 10px;font-size:11px;">💼 仕事重ね: ON</button>
+        </div>
       </div>
 
       <!-- 💐 ありがとうポイント＆ご褒美メーター -->
@@ -464,10 +469,17 @@
           <select id="formCategory" class="input-field">
             <option value="kids">🏫 息子さん（私立小1・宿題・習い事）</option>
             <option value="family">🟠 家族・池田市お出かけ</option>
-            <option value="mama">🔴 ママ予定</option>
+            <option value="mama">🔴 ママ予定（通常共有）</option>
+            <option value="mama_secret">🔒 ママ専用シークレット（パパには「時間のみ・予定あり」表示）</option>
             <option value="papa">🔵 パパ予定</option>
             <option value="work">💼 仕事の予定・空き時間</option>
           </select>
+        </div>
+        <div style="margin-bottom:8px;padding:8px 10px;border-radius:12px;background:#fdecef;border:1px solid #f5d0d8;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#c92a49;cursor:pointer;">
+            <input id="formMamaSecretCheck" type="checkbox" style="width:16px;height:16px;accent-color:#c92a49;" />
+            🔒 パパには詳細を隠す（パパのスマホでは『🔒ママ予定あり（時間のみ）』と表示）
+          </label>
         </div>
         <div style="margin-bottom:8px;">
           <label class="sub-text">予定・提出物タイトル</label>
@@ -508,6 +520,38 @@
           <button onclick="submitNewMemo()" class="btn btn-primary" style="white-space:nowrap;">追加</button>
         </div>
         <div id="memoListBox"></div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#fffdf9,#fdecef33);border:1px solid #eadfce;">
+        <div style="font-weight:800;font-size:15px;margin-bottom:4px;">📅 夫婦のプライベートGoogleカレンダー同期 ＆ 🔒ママ秘密モード設定</div>
+        <p class="sub-text">
+          お二人のGoogleカレンダー（Gmailアドレス）を登録すると、個人の予定も自動でカレンダーに重なります。<br />
+          <strong>🔒 ママのプライバシー保護</strong>：「時間のみ共有」にしておくと、ママのスマホでは詳細が見え、パパのスマホでは<strong>『🔒 ママ予定あり（時間のみ）』</strong>と自動で伏せ字になります！
+        </p>
+        <div style="margin-top:8px;display:grid;gap:8px;">
+          <div>
+            <label class="sub-text">👨 パパのGoogleカレンダー（Gmailアドレス）</label>
+            <input id="gcalPapaInput" type="email" value="hira20130128@gmail.com" placeholder="papa@gmail.com" class="input-field" />
+          </div>
+          <div>
+            <label class="sub-text">👩 ママのGoogleカレンダー（Gmailアドレス）</label>
+            <input id="gcalMamaInput" type="email" placeholder="奥様の @gmail.com を入力" class="input-field" />
+          </div>
+          <div>
+            <label class="sub-text">🔒 パパのスマホでの「ママ予定」の見え方</label>
+            <select id="gcalMamaPrivacySelect" class="input-field">
+              <option value="busy_only">🔒 時間だけ共有（パパには『🔒ママ予定あり』と表示・詳細非公開）</option>
+              <option value="full">👀 タイトルもそのまま共有する</option>
+            </select>
+          </div>
+          <button onclick="saveGcalSyncSettings()" class="btn btn-primary" style="width:100%;padding:10px;">
+            💾 Googleカレンダー同期＆ママ秘密モード設定を保存
+          </button>
+          <div class="sub-text" style="font-size:11px;background:#fff;padding:8px;border-radius:10px;border:1px dashed var(--border);">
+            💡 <strong>奥様のGoogleカレンダーを繋ぐコツ（初回1分）</strong>：<br />
+            奥様のGoogleカレンダー設定の「特定のユーザーとの共有」でパパのGmailを追加する際、権限を<strong>『予定の時間枠のみを表示（詳細は非表示）』</strong>にしておくと、Google側でもタイトルが完全秘密のまま空き時間だけ自動同期できます！
+          </div>
+        </div>
       </div>
 
       <div class="card">
@@ -555,14 +599,14 @@
     </div>
 
     <div class="version-footer">
-      ふたりの家族カレンダー v3.4.0 （大阪府池田市・ご家族専用／完全0円）
+      ふたりの家族カレンダー v3.5.0 （大阪府池田市・ご家族専用／完全0円）
       <div id="sheetLinkWrap" style="margin-top:4px;"></div>
     </div>
   </div>
 
   <script>
     /*
-     * 🏡 ふたりの家族カレンダー v3.4.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
+     * 🏡 ふたりの家族カレンダー v3.5.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
      * 1. 合言葉PIN（1122）を入力した瞬間に0.05秒でロック解除！（通信待ちや権限エラーで絶対にロック画面で止まらない）
      * 2. スマホ本体(localStorage)に即座に保存しつつ、裏側でGoogleスプレッドシートとも自動同期！
      */
@@ -591,7 +635,7 @@
 
       function loadLocalDB() {
         try {
-          var raw = localStorage.getItem("family_cal_local_db_v33");
+          var raw = localStorage.getItem("family_cal_local_db_v35");
           if (raw) {
             var parsed = JSON.parse(raw);
             parsed.todayIso = getTodayJstIso();
@@ -602,7 +646,7 @@
         var tmIso = getTomorrowJstIso();
         var initDb = {
           ok: true,
-          version: "v3.4.0",
+          version: "v3.5.0",
           deviceToken: "LOCAL_AUTO_TOKEN_1122",
           hasGeminiKey: Boolean(localStorage.getItem("family_cal_gemini_key")),
           sheetUrl: "https://docs.google.com/spreadsheets/d/1DrqBuKm0OpvIMZ-JcLiK57MPnnms1Jyb4G366kIlT3o/edit",
@@ -638,6 +682,15 @@
               date: tmIso,
               timeSlot: "08:00 朝登校時",
               category: "kids",
+              title: "💅 美容皮膚科＆梅田カフェランチ（ママのひみつ予定サンプル）",
+              isMamaSecret: true,
+              note: "[MAMA_SECRET]"
+            },
+            {
+              eventId: "EV-INIT-003",
+              date: tmIso,
+              timeSlot: "08:00 朝登校時",
+              category: "kids",
               title: "🏫 学校お便り提出＆図書室の本返却",
               assignee: "👩ママ担当",
               checklist: [
@@ -665,7 +718,7 @@
       }
 
       function saveLocalDB(db) {
-        try { localStorage.setItem("family_cal_local_db_v33", JSON.stringify(db)); } catch (e) {}
+        try { localStorage.setItem("family_cal_local_db_v35", JSON.stringify(db)); } catch (e) {}
       }
 
       function checkPinLocal(pin) {
@@ -688,8 +741,19 @@
           saveLocalDB(db);
           return { ok: true, hasGeminiKey: true };
         }
+        if (action === "apiSaveGcalSyncConfig") {
+          var cfg0 = args[0] || {};
+          db.gcalSyncConfig = {
+            papaCalId: cfg0.papaCalId || "hira20130128@gmail.com",
+            mamaCalId: cfg0.mamaCalId || "",
+            mamaPrivacy: cfg0.mamaPrivacy || "busy_only"
+          };
+          saveLocalDB(db);
+          return db;
+        }
         if (action === "apiAddEvent") {
           var p0 = args[0] || {};
+          var isSec = Boolean(p0.isMamaSecret) || String(p0.note || "").indexOf("[MAMA_SECRET]") !== -1;
           db.events.push({
             eventId: "EV-" + Date.now(),
             date: p0.date || db.todayIso,
@@ -698,7 +762,8 @@
             title: p0.title || "新しい予定",
             assignee: p0.assignee || "🤝ふたりで",
             checklist: Array.isArray(p0.checklist) ? p0.checklist : [],
-            note: p0.note || ""
+            note: p0.note || "",
+            isMamaSecret: isSec
           });
           db.thanksInfo.count += 1;
           db.thanksInfo.lastMsg = "📅 予定「" + (p0.title || "") + "」を登録ありがとう！";
@@ -887,7 +952,7 @@
           "apiUpdateEventStatus", "apiToggleDailyDuty", "apiCreateGrade1HomeworkPack",
           "apiSaveIkedaTrashSchedule", "apiSendThanksStamp", "apiAddMemo",
           "apiBatchAddShoppingItems", "apiToggleMemoDone", "apiAddAnniversary",
-          "apiScanPrintImage", "apiParseMagicText", "apiSuggestDinnerMenus"
+          "apiScanPrintImage", "apiParseMagicText", "apiSuggestDinnerMenus", "apiSaveGcalSyncConfig"
         ];
         var runner = {
           withSuccessHandler: function(fn) { return makeRunner(fn, onFailure); },
@@ -1281,6 +1346,11 @@
       }
 
       if (!appState.trashConfig) appState.trashConfig = { normalDays: '1,4', plasticDay: '3', resourceDay: '5' };
+      if (appState.gcalSyncConfig) {
+        if (document.getElementById('gcalPapaInput')) document.getElementById('gcalPapaInput').value = appState.gcalSyncConfig.papaCalId || 'hira20130128@gmail.com';
+        if (document.getElementById('gcalMamaInput')) document.getElementById('gcalMamaInput').value = appState.gcalSyncConfig.mamaCalId || '';
+        if (document.getElementById('gcalMamaPrivacySelect')) document.getElementById('gcalMamaPrivacySelect').value = appState.gcalSyncConfig.mamaPrivacy || 'busy_only';
+      }
       document.getElementById('trashNormalSelect').value = appState.trashConfig.normalDays || '1,4';
       document.getElementById('trashPlasticSelect').value = appState.trashConfig.plasticDay || '3';
       document.getElementById('trashResourceSelect').value = appState.trashConfig.resourceDay || '5';
@@ -1672,7 +1742,11 @@
         return;
       }
 
+      var viewerRole = getDeviceOwnerRole();
       dayEvents.forEach(function(ev) {
+        var isSecretForViewer = (Boolean(ev.isMamaSecret) || String(ev.note || '').indexOf('[MAMA_SECRET]') !== -1) && viewerRole !== 'mama';
+        var isMamaSecretOwnerView = (Boolean(ev.isMamaSecret) || String(ev.note || '').indexOf('[MAMA_SECRET]') !== -1) && viewerRole === 'mama';
+
         var item = document.createElement('div');
         item.className = 'event-item';
 
@@ -1685,10 +1759,18 @@
         catPill.textContent = ev.timeSlot || '終日';
         leftInfo.appendChild(catPill);
 
+        if (isMamaSecretOwnerView) {
+          var secBadge = document.createElement('span');
+          secBadge.className = 'pill cat-mama';
+          secBadge.style.marginLeft = '4px';
+          secBadge.textContent = '🔒パパには時間のみ表示中';
+          leftInfo.appendChild(secBadge);
+        }
+
         var titleDiv = document.createElement('div');
         titleDiv.style.fontWeight = '800';
         titleDiv.style.marginTop = '4px';
-        titleDiv.textContent = ev.title;
+        titleDiv.textContent = isSecretForViewer ? '🔒 ママ予定あり（プライベート・時間のみ共有）' : ev.title;
         leftInfo.appendChild(titleDiv);
 
         var whoBtn = document.createElement('button');
@@ -1713,7 +1795,7 @@
         topRow.appendChild(whoBtn);
         item.appendChild(topRow);
 
-        if (ev.checklist && ev.checklist.length > 0) {
+        if (!isSecretForViewer && ev.checklist && ev.checklist.length > 0) {
           var bagWrap = document.createElement('div');
           bagWrap.className = 'bag-list';
           ev.checklist.forEach(function(bag, bIdx) {
@@ -1905,6 +1987,58 @@
         .apiSaveIkedaTrashSchedule(currentPin, n, p, r);
     }
 
+    function getDeviceOwnerRole() {
+      try {
+        return localStorage.getItem('family_cal_owner_role') || 'papa';
+      } catch (e) {
+        return 'papa';
+      }
+    }
+
+    function updateRoleSwitchButtonUi() {
+      var role = getDeviceOwnerRole();
+      var btn = document.getElementById('roleSwitchBtn');
+      if (!btn) return;
+      if (role === 'mama') {
+        btn.textContent = '👩 ママのスマホ';
+        btn.style.background = '#fdecef';
+        btn.style.color = '#c92a49';
+        btn.style.borderColor = '#f5d0d8';
+      } else {
+        btn.textContent = '👨 パパのスマホ';
+        btn.style.background = '#e8f4fd';
+        btn.style.color = '#0b69a3';
+        btn.style.borderColor = '#9ed2f6';
+      }
+    }
+
+    function toggleDeviceOwnerRole() {
+      var cur = getDeviceOwnerRole();
+      var next = cur === 'papa' ? 'mama' : 'papa';
+      try { localStorage.setItem('family_cal_owner_role', next); } catch (e) {}
+      updateRoleSwitchButtonUi();
+      renderAll();
+      if (next === 'mama') {
+        setToast('👩「ママのスマホ」モードに切替：ママの🔒秘密予定タイトルもすべて表示されます');
+      } else {
+        setToast('👨「パパのスマホ」モードに切替：ママの🔒秘密予定は『時間のみ』で保護されます');
+      }
+    }
+
+    function saveGcalSyncSettings() {
+      var papaId = document.getElementById('gcalPapaInput').value.trim();
+      var mamaId = document.getElementById('gcalMamaInput').value.trim();
+      var priv = document.getElementById('gcalMamaPrivacySelect').value;
+      setToast('📅 Googleカレンダー同期＆ママ秘密モード設定を保存中...');
+      google.script.run
+        .withSuccessHandler(function(res) {
+          applyServerState(res);
+          switchTab('cal');
+          setToast('📅 Googleカレンダー同期設定を保存しました！');
+        })
+        .apiSaveGcalSyncConfig(currentPin, { papaCalId: papaId, mamaCalId: mamaId, mamaPrivacy: priv });
+    }
+
     function submitNewEvent() {
       var dateVal = document.getElementById('formDate').value || selectedDateIso;
       var timeVal = document.getElementById('formTime').value.trim();
@@ -1912,6 +2046,11 @@
       var titleVal = document.getElementById('formTitle').value.trim();
       var assigneeVal = document.getElementById('formAssignee').value;
       var bagsRaw = document.getElementById('formBags').value.trim();
+      var secretChecked = document.getElementById('formMamaSecretCheck') && document.getElementById('formMamaSecretCheck').checked;
+
+      var isMamaSecret = (catVal === 'mama_secret') || secretChecked;
+      var finalCat = catVal === 'mama_secret' ? 'mama' : catVal;
+      if (isMamaSecret) assigneeVal = '👩ママ担当';
 
       if (!titleVal) {
         setToast('予定タイトルを入力してください');
@@ -1926,18 +2065,21 @@
         .withSuccessHandler(function(res) {
           document.getElementById('formTitle').value = '';
           document.getElementById('formBags').value = '';
+          if (document.getElementById('formMamaSecretCheck')) document.getElementById('formMamaSecretCheck').checked = false;
           selectedDateIso = dateVal;
           applyServerState(res);
           switchTab('cal');
-          setToast('予定を登録しました！');
+          setToast(isMamaSecret ? '🔒 ママ専用シークレット予定を登録しました（パパには時間のみ表示されます）' : '予定を登録しました！');
         })
         .apiAddEvent(currentPin, {
           date: dateVal,
           timeSlot: timeVal,
-          category: catVal,
+          category: finalCat,
           title: titleVal,
           assignee: assigneeVal,
-          checklist: checklist
+          checklist: checklist,
+          note: isMamaSecret ? '[MAMA_SECRET]' : '',
+          isMamaSecret: isMamaSecret
         });
     }
 
@@ -2040,6 +2182,7 @@
     }
 
     function renderAll() {
+      updateRoleSwitchButtonUi();
       renderThanksBar();
       renderWeatherBanner();
       renderMonthGrid();

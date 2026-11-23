@@ -1,4 +1,4 @@
-var CACHE_NAME = 'family-calendar-pwa-v3.4.0';
+var CACHE_NAME = 'family-calendar-pwa-v3.5.0';
 var ASSETS = [
   '/family-shared-calendar-pwa/',
   '/family-shared-calendar-pwa/index.html',
