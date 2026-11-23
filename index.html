@@ -2,9 +2,16 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#e68a2e" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="家族カレンダー" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>🏡 ふたりの家族カレンダー（池田市＆小1サポート）</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <title>家族カレンダー</title>
   <style>
     :root {
       --bg: #fdfaf6;
@@ -282,6 +289,18 @@
   </div>
 
   <div class="container">
+    <!-- 📲 ワンタップ・本物アプリインストール案内カード -->
+    <div id="pwaInstallCard" class="card hidden" style="background:linear-gradient(135deg,#fff4e5,#fdecef);border:2px solid #e68a2e;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="icon-192.png" alt="icon" style="width:42px;height:42px;border-radius:10px;border:1px solid #eadfce;" />
+        <div>
+          <div style="font-weight:800;font-size:13px;">📲 スマホに専用アプリとして入れる</div>
+          <div class="sub-text" style="font-size:11px;">Chromeバッジなし・可愛い専用アイコンで入ります</div>
+        </div>
+      </div>
+      <button id="pwaInstallBtn" onclick="triggerPwaInstall()" class="btn btn-primary" style="white-space:nowrap;padding:8px 12px;">インストール</button>
+    </div>
+
     <!-- ヘッダー ＆ 💐ありがとうご褒美メーター -->
     <div class="header-card">
       <div class="row-between">
@@ -536,14 +555,14 @@
     </div>
 
     <div class="version-footer">
-      ふたりの家族カレンダー v3.3.0 （大阪府池田市・ご家族専用／完全0円）
+      ふたりの家族カレンダー v3.4.0 （大阪府池田市・ご家族専用／完全0円）
       <div id="sheetLinkWrap" style="margin-top:4px;"></div>
     </div>
   </div>
 
   <script>
     /*
-     * 🏡 ふたりの家族カレンダー v3.3.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
+     * 🏡 ふたりの家族カレンダー v3.4.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
      * 1. 合言葉PIN（1122）を入力した瞬間に0.05秒でロック解除！（通信待ちや権限エラーで絶対にロック画面で止まらない）
      * 2. スマホ本体(localStorage)に即座に保存しつつ、裏側でGoogleスプレッドシートとも自動同期！
      */
@@ -583,7 +602,7 @@
         var tmIso = getTomorrowJstIso();
         var initDb = {
           ok: true,
-          version: "v3.3.0",
+          version: "v3.4.0",
           deviceToken: "LOCAL_AUTO_TOKEN_1122",
           hasGeminiKey: Boolean(localStorage.getItem("family_cal_gemini_key")),
           sheetUrl: "https://docs.google.com/spreadsheets/d/1DrqBuKm0OpvIMZ-JcLiK57MPnnms1Jyb4G366kIlT3o/edit",
@@ -2043,6 +2062,37 @@
         document.getElementById('pinOverlay').classList.remove('hidden');
       }
     })();
+
+    var deferredInstallPrompt = null;
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function() {
+        navigator.serviceWorker.register("sw.js").catch(function() {});
+      });
+    }
+    window.addEventListener("beforeinstallprompt", function(e) {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      var card = document.getElementById("pwaInstallCard");
+      if (card) card.classList.remove("hidden");
+    });
+    window.addEventListener("appinstalled", function() {
+      deferredInstallPrompt = null;
+      var card = document.getElementById("pwaInstallCard");
+      if (card) card.classList.add("hidden");
+      setToast("🎉 ホーム画面へのアプリインストールが完了しました！");
+    });
+    function triggerPwaInstall() {
+      if (!deferredInstallPrompt) {
+        alert("Chrome右上の「︙」メニューから「アプリをインストール」を押してください✨");
+        return;
+      }
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then(function() {
+        deferredInstallPrompt = null;
+        var card = document.getElementById("pwaInstallCard");
+        if (card) card.classList.add("hidden");
+      });
+    }
   </script>
 </body>
 </html>

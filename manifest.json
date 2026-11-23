@@ -1,0 +1,38 @@
+{
+  "id": "/family-shared-calendar-pwa/",
+  "name": "家族カレンダー（平林ファミリー）",
+  "short_name": "家族カレンダー",
+  "description": "大阪府池田市3時間天気・3人服装ナビ・私立小1宿題＆お便りAIサポート付き家族共有カレンダー",
+  "start_url": "/family-shared-calendar-pwa/?source=pwa",
+  "scope": "/family-shared-calendar-pwa/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdfaf6",
+  "theme_color": "#e68a2e",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
