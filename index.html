@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>🏡 ふたりの家族カレンダー（池田市＆小1サポート）</title>
+  <style>
+    :root {
+      --bg: #fdfaf6;
+      --card: #ffffff;
+      --border: #eadfce;
+      --text: #2c2520;
+      --muted: #786c63;
+      --accent: #e68a2e;
+      --family-bg: #fff4e5;
+      --family-text: #c86400;
+      --kids-bg: #e7f7ef;
+      --kids-text: #137a4b;
+      --mama-bg: #fdecef;
+      --mama-text: #c92a49;
+      --papa-bg: #e8f4fd;
+      --papa-text: #0b69a3;
+      --work-bg: #f1f3f5;
+      --work-text: #495057;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0 0 60px 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .container { max-width: 580px; margin: 0 auto; padding: 12px; }
+    .header-card {
+      background: linear-gradient(135deg, #fff6ea 0%, #fdeff2 50%, #eef7ff 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 13px 14px;
+      margin-bottom: 10px;
+    }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .title-main { font-size: 16px; font-weight: 800; }
+    .sub-text { font-size: 12px; color: var(--muted); }
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-rose { background: #e03e5d; color: #fff; border-color: #e03e5d; }
+    .btn-emerald { background: #137a4b; color: #fff; border-color: #137a4b; }
+    .btn-work-on { background: var(--papa-bg); color: var(--papa-text); border-color: #9ed2f6; }
+    .thanks-bar-box {
+      margin-top: 10px;
+      padding: 9px 11px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid #f5d0d8;
+    }
+    .meter-track {
+      width: 100%;
+      height: 8px;
+      background: #f3e8ea;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 5px 0;
+    }
+    .meter-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff8787, #e68a2e);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-top: 8px;
+      scrollbar-width: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .filter-chip.active { outline: 2px solid var(--accent); }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      background: var(--card);
+      padding: 5px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 8px 2px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .tab-btn.active { background: var(--accent); color: #fff; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .cal-dow-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin: 4px 0 12px;
+    }
+    .day-cell {
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 11px;
+      padding: 4px 2px;
+      min-height: 62px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .day-cell.other-month { opacity: 0.4; }
+    .day-cell.selected { border: 2px solid var(--accent); background: var(--family-bg); }
+    .dot-row { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
+    .dot { width: 6px; height: 6px; border-radius: 999px; }
+    .dot-family { background: #e68a2e; }
+    .dot-kids { background: #1ca664; }
+    .dot-mama { background: #e03e5d; }
+    .dot-papa { background: #1c88cc; }
+    .dot-work { background: #868e96; }
+    .weather-banner {
+      background: linear-gradient(135deg, #eef7ff 0%, #fff6ea 100%);
+      border: 1px solid #c5e2f7;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .hourly-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+      margin: 8px 0;
+    }
+    .hourly-cell {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 5px 2px;
+      text-align: center;
+      font-size: 11px;
+    }
+    .outfit-box {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 9px 10px;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+    .trash-banner {
+      background: #f4fce3;
+      border: 1px solid #c0eb75;
+      border-radius: 12px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    .duty-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+    .duty-btn {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 8px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .duty-label { font-size: 11px; color: var(--muted); }
+    .duty-val { font-size: 12px; font-weight: 800; margin-top: 3px; word-break: keep-all; }
+    .event-item { border: 1px solid var(--border); border-radius: 14px; padding: 10px; margin-bottom: 8px; }
+    .cat-family { background: var(--family-bg); color: var(--family-text); }
+    .cat-kids { background: var(--kids-bg); color: var(--kids-text); }
+    .cat-mama { background: var(--mama-bg); color: var(--mama-text); }
+    .cat-papa { background: var(--papa-bg); color: var(--papa-text); }
+    .cat-work { background: var(--work-bg); color: var(--work-text); }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .bag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+    }
+    .bag-btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .bag-btn.done { text-decoration: line-through; opacity: 0.65; background: var(--kids-bg); }
+    .input-field {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      margin-top: 4px;
+      background: #fff;
+    }
+    .hidden { display: none !important; }
+    .pin-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(44, 37, 32, 0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .pin-box {
+      background: var(--card);
+      border-radius: 24px;
+      max-width: 340px;
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+    }
+    .version-footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 16px; }
+  </style>
+</head>
+<body>
+
+  <!-- 合言葉PINモーダル（初回のみ表示。記憶済みまたはURLトークン付きなら最初から非表示！） -->
+  <div id="pinOverlay" class="pin-overlay hidden">
+    <div class="pin-box">
+      <div style="font-size:32px;">🏡🔐</div>
+      <div class="title-main" style="margin-top:6px;">ふたりの合言葉（4桁PIN）</div>
+      <p class="sub-text">初回だけ「1122」を入力すると、次回からは自動で開きます。</p>
+      <input id="pinInput" type="password" inputmode="numeric" maxlength="8" placeholder="1122" class="input-field" style="text-align:center;font-size:18px;letter-spacing:4px;" />
+      <div id="pinError" style="color:#c92a49;font-size:12px;margin-top:6px;"></div>
+      <button onclick="unlockWithPin()" class="btn btn-primary" style="width:100%;margin-top:12px;padding:11px;">ロック解除（次回から自動ログイン）</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- ヘッダー ＆ 💐ありがとうご褒美メーター -->
+    <div class="header-card">
+      <div class="row-between">
+        <div>
+          <div class="title-main">🏡 ふたりの家族カレンダー</div>
+          <div id="toastBar" class="sub-text">📍大阪府池田市のお天気と予定を読み込み中...</div>
+        </div>
+        <button id="workBtn" onclick="toggleWorkOverlay()" class="btn btn-work-on">💼 仕事重ね: ON</button>
+      </div>
+
+      <!-- 💐 ありがとうポイント＆ご褒美メーター -->
+      <div class="thanks-bar-box">
+        <div class="row-between">
+          <div style="font-size:12px;font-weight:800;color:#c92a49;">
+            💐 助け合いメーター：<span id="thanksCountText">14 / 20</span>
+          </div>
+          <button onclick="sendQuickThanks()" class="btn btn-rose" style="padding:4px 10px;font-size:11px;">
+            💝 ありがとうを送る
+          </button>
+        </div>
+        <div class="meter-track">
+          <div id="thanksMeterFill" class="meter-fill" style="width:70%;"></div>
+        </div>
+        <div class="row-between" style="font-size:11px;color:var(--muted);">
+          <span id="thanksRewardText">🎁 目標ご褒美：☕ 週末ご褒美スタバ＆ケーキ</span>
+          <span id="thanksLastMsg" style="max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <button id="f-all" onclick="setCatFilter('all')" class="filter-chip active">すべて</button>
+        <button id="f-family" onclick="setCatFilter('family')" class="filter-chip cat-family">🟠 家族</button>
+        <button id="f-kids" onclick="setCatFilter('kids')" class="filter-chip cat-kids">🏫 息子さん(小1)</button>
+        <button id="f-mama" onclick="setCatFilter('mama')" class="filter-chip cat-mama">🔴 ママ</button>
+        <button id="f-papa" onclick="setCatFilter('papa')" class="filter-chip cat-papa">🔵 パパ</button>
+      </div>
+    </div>
+
+    <!-- 5つのナビゲーションタブ -->
+    <div class="tabs">
+      <button id="tab-cal" onclick="switchTab('cal')" class="tab-btn active">📅 池田天気・予定</button>
+      <button id="tab-school" onclick="switchTab('school')" class="tab-btn">🏫 小1宿題・お便り</button>
+      <button id="tab-dinner" onclick="switchTab('dinner')" class="tab-btn">🍳 15分献立</button>
+      <button id="tab-add" onclick="switchTab('add')" class="tab-btn">＋ 個別追加</button>
+      <button id="tab-memo" onclick="switchTab('memo')" class="tab-btn">🛒 買物・ゴミ設定</button>
+    </div>
+
+    <!-- タブ1: ☀️ 池田市3時間天気＆3人別服装ナビ（一番上に常時表示！）＋ 月間カレンダー -->
+    <div id="view-cal">
+      <!-- ☀️ 選択日の「大阪府池田市・3時間ごとの天気＆3人別服装・洗濯・お出かけナビ」を最上部に常時表示！ -->
+      <div id="weatherBannerBox" class="weather-banner">
+        <div style="font-weight:800;font-size:13px;">📍大阪府池田市のお天気＆ご家族3人の服装を計算中...</div>
+      </div>
+
+      <div class="card">
+        <div class="row-between">
+          <div id="currentMonthLabel" style="font-weight:800;font-size:15px;">カレンダー</div>
+          <div style="display:flex;gap:4px;">
+            <button onclick="shiftMonth(-1)" class="btn">◀ 前月</button>
+            <button onclick="goToday()" class="btn">今日</button>
+            <button onclick="shiftMonth(1)" class="btn">次月 ▶</button>
+          </div>
+        </div>
+        <div class="cal-dow-grid">
+          <div style="color:#c92a49;">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div style="color:#0b69a3;">土</div>
+        </div>
+        <div id="monthGrid" class="cal-grid"></div>
+
+        <!-- 🗑️ 選択日の池田市ゴミ出し自動バナー -->
+        <div id="trashBannerBox" class="trash-banner"></div>
+
+        <div class="row-between" style="margin-bottom:6px;padding-top:6px;border-top:1px solid var(--border);">
+          <div id="selectedDateHeading" style="font-weight:800;">選択日の担当と予定</div>
+          <span class="sub-text">スタンプをタップで交代👇</span>
+        </div>
+        <div id="dutyGrid" class="duty-grid"></div>
+        <div id="eventList"></div>
+      </div>
+    </div>
+
+    <!-- タブ2: 🏫 私立小1の息子さん専用「宿題＆時間割1タップ作成」＋「大量のお便り・連絡文の一発分解」 -->
+    <div id="view-school" class="hidden">
+      <div class="card">
+        <div class="row-between">
+          <div style="font-weight:800;font-size:15px;">🏫 私立小1 息子さん毎日の宿題＆時間割パック</div>
+          <span class="pill cat-kids">6歳・小1</span>
+        </div>
+        <p class="sub-text">
+          宿題が多い私立小学校の毎日のルーティン（<strong>音読サイン・漢字/計算プリント丸つけ・連絡帳確認・明日の時間割＆鉛筆5本削り</strong>）を1タップでその日のチェックリストに追加します！
+        </p>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button onclick="addGrade1Homework('👩ママ担当')" class="btn" style="flex:1;">👩 今日ママ担当で追加</button>
+          <button onclick="addGrade1Homework('👨パパお願い！')" class="btn btn-primary" style="flex:1;">👨 今日パパお願い！で追加</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:800;font-size:15px;">🪄 APIキー不要・完全0円！お便り文・LINE・カメラ文字スキャン一発分解</div>
+        <p class="sub-text">
+          ①学校メールやLINEのコピペ、②スマホキーボードの🎤音声入力、または ③<strong>iPhone/Androidの入力欄長押し「テキストをスキャン（カメラで紙プリントを映すだけ・0円）」</strong>で入った文字から、複数の予定・提出期限・🎒持ち物リストへ自動分解します！
+        </p>
+        <textarea id="magicTextInput" rows="4" placeholder="ここを長押し→「テキストをスキャン」で紙プリントを映すか、学校メール文を貼り付けてください" class="input-field"></textarea>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button onclick="fillSampleMagicText()" class="btn" style="flex:1;">✨ 私立小お便りサンプル</button>
+          <button onclick="runMagicParse()" class="btn btn-primary" style="flex:2;">🪄 予定・提出物・持ち物に自動分解</button>
+        </div>
+        <div id="magicPreviewBox" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:800;font-size:15px;">📸 写真ファイルからのAI直接読取（Google無料APIキー対応・¥0）</div>
+        <p class="sub-text">
+          写真ファイルをそのままAIに読ませたい場合は、Google AI Studioの無料キー（¥0・クレカ不要）を1回だけ下に登録すると使えます。
+        </p>
+        <input id="printFileInput" type="file" accept="image/*" capture="environment" class="input-field" onchange="handlePrintFile(this)" />
+        <div id="scanStatus" class="sub-text" style="margin-top:8px;"></div>
+        <div id="geminiKeyBox" style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);">
+          <div class="sub-text">🔑 無料Gemini APIキー設定（任意・1回登録すれば永久保存）：</div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <input id="geminiKeyInput" type="password" placeholder="AIza...（Google AI Studio無料キー）" class="input-field" style="margin-top:0;" />
+            <button onclick="saveGeminiKeyFromUi()" class="btn" style="white-space:nowrap;">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- タブ3: 🍳 AI献立＆買い物コンシェルジュ -->
+    <div id="view-dinner" class="hidden">
+      <div class="card">
+        <div style="font-weight:800;font-size:15px;">🍳 冷蔵庫にあるもので『今夜の15分献立3案＋買い物メモ自動追加』</div>
+        <p class="sub-text">
+          宿題の丸つけで忙しい日の強い味方！冷蔵庫の残り物を選ぶだけで、6歳の男の子もモリモリ食べる<strong>15分時短メニュー3案</strong>と<strong>買い足す食材リスト</strong>を自動作成します（完全0円）。
+        </p>
+        <input id="fridgeInput" type="text" value="豚こま肉、卵、キャベツ" placeholder="例：豚肉、卵、キャベツ、豆腐..." class="input-field" />
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;">
+          <button onclick="setFridgePreset('豚こま肉、卵、キャベツ')" class="btn" style="font-size:11px;padding:4px 9px;">🥩 豚肉・卵・キャベツ</button>
+          <button onclick="setFridgePreset('鶏もも肉、玉ねぎ、じゃがいも')" class="btn" style="font-size:11px;padding:4px 9px;">🍗 鶏肉・玉ねぎ・じゃがいも</button>
+          <button onclick="setFridgePreset('鮭の切り身、きのこ、豆腐')" class="btn" style="font-size:11px;padding:4px 9px;">🐟 鮭・きのこ・豆腐</button>
+        </div>
+        <button onclick="runDinnerConcierge()" class="btn btn-emerald" style="width:100%;margin-top:10px;padding:11px;">
+          🍳 今夜の15分献立3案を自動で作る！
+        </button>
+        <div id="dinnerSuggestionsBox" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- タブ4: 個別予定＆持ち物チェック追加 -->
+    <div id="view-add" class="hidden">
+      <div class="card">
+        <div style="font-weight:800;font-size:15px;margin-bottom:10px;">＋ 新しい予定＆🎒持ち物・提出物登録</div>
+        <div style="margin-bottom:8px;">
+          <label class="sub-text">日付</label>
+          <input id="formDate" type="date" class="input-field" />
+        </div>
+        <div style="margin-bottom:8px;">
+          <label class="sub-text">時間帯（例：08:00 朝提出 / 14:00〜15:30 / 終日）</label>
+          <input id="formTime" type="text" value="10:00〜11:30" class="input-field" />
+        </div>
+        <div style="margin-bottom:8px;">
+          <label class="sub-text">カテゴリー</label>
+          <select id="formCategory" class="input-field">
+            <option value="kids">🏫 息子さん（私立小1・宿題・習い事）</option>
+            <option value="family">🟠 家族・池田市お出かけ</option>
+            <option value="mama">🔴 ママ予定</option>
+            <option value="papa">🔵 パパ予定</option>
+            <option value="work">💼 仕事の予定・空き時間</option>
+          </select>
+        </div>
+        <div style="margin-bottom:8px;">
+          <label class="sub-text">予定・提出物タイトル</label>
+          <input id="formTitle" type="text" placeholder="例：授業参観・宿題プリント提出・スイミング" class="input-field" />
+        </div>
+        <div style="margin-bottom:8px;">
+          <label class="sub-text">担当スタンプ</label>
+          <select id="formAssignee" class="input-field">
+            <option value="🤝ふたりで">🤝 ふたりで</option>
+            <option value="👩ママ担当">👩 ママ担当</option>
+            <option value="👨パパお願い！">👨 パパお願い！</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label class="sub-text">🎒 持ち物・宿題チェックリスト（カンマ区切り）</label>
+          <input id="formBags" type="text" placeholder="例：保護者証, スリッパ, 音読カード, 漢字プリント" class="input-field" />
+        </div>
+        <button onclick="submitNewEvent()" class="btn btn-primary" style="width:100%;padding:11px;">カレンダーに登録＆Googleカレンダー同期</button>
+      </div>
+    </div>
+
+    <!-- タブ5: 買い物メモ・池田市ゴミ出し設定・自動ログイン設定・記念日 -->
+    <div id="view-memo" class="hidden">
+      <div class="card">
+        <div style="font-weight:800;font-size:15px;margin-bottom:8px;">🛒 帰りに買うもの ＆ 🎠 池田市・北摂お出かけストック</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <select id="newMemoWho" class="input-field" style="width:105px;margin-top:0;">
+            <option value="👨パパ">👨パパ</option>
+            <option value="👩ママ">👩ママ</option>
+          </select>
+          <select id="newMemoType" class="input-field" style="width:130px;margin-top:0;">
+            <option value="shopping">🛒 買うもの</option>
+            <option value="weekend">🎠 お出かけ候補</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <input id="newMemoText" type="text" placeholder="例：2B鉛筆、自由帳、牛乳、五月山公園..." class="input-field" style="margin-top:0;" />
+          <button onclick="submitNewMemo()" class="btn btn-primary" style="white-space:nowrap;">追加</button>
+        </div>
+        <div id="memoListBox"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:800;font-size:15px;margin-bottom:6px;">🗑️ 池田市ゴミ収集曜日オート表示設定</div>
+        <p class="sub-text">お住まいの地区の曜日を選んでおくと、カレンダーと当日朝・前日夜バナーに自動表示されます。</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;">
+          <div>
+            <label class="sub-text">🔥 普通ごみ(週2)</label>
+            <select id="trashNormalSelect" class="input-field">
+              <option value="1,4">月・木 地区</option>
+              <option value="2,5">火・金 地区</option>
+            </select>
+          </div>
+          <div>
+            <label class="sub-text">♻️ プラ容器</label>
+            <select id="trashPlasticSelect" class="input-field">
+              <option value="3">水曜 地区</option>
+              <option value="2">火曜 地区</option>
+              <option value="4">木曜 地区</option>
+              <option value="5">金曜 地区</option>
+            </select>
+          </div>
+          <div>
+            <label class="sub-text">🥫 資源・古紙</label>
+            <select id="trashResourceSelect" class="input-field">
+              <option value="5">金曜 地区</option>
+              <option value="3">水曜 地区</option>
+              <option value="1">月曜 地区</option>
+              <option value="2">火曜 地区</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="saveTrashSettings()" class="btn" style="width:100%;margin-top:8px;">💾 池田市のゴミ曜日を保存してカレンダーへ反映</button>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:800;font-size:15px;margin-bottom:8px;">🎂 大切な記念日・息子さん7歳誕生日・毎年イベント</div>
+        <div id="annivListBox"></div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <input id="newAnnivMd" type="text" placeholder="月-日 (例:02-15)" class="input-field" style="width:125px;margin-top:0;" />
+          <input id="newAnnivTitle" type="text" placeholder="息子7歳誕生日・結婚記念日など" class="input-field" style="margin-top:0;" />
+          <button onclick="submitNewAnniv()" class="btn" style="white-space:nowrap;">＋登録</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="version-footer">
+      ふたりの家族カレンダー v3.2.0 （大阪府池田市・ご家族専用／完全0円）
+      <div id="sheetLinkWrap" style="margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <script>
+    /* スマホChrome複数アカウント競合(script.google.com/macros/u/...)＆Google警告帯を100%ゼロにするハイブリッド通信シム */
+    var GAS_EXEC_URL = "https://script.google.com/macros/s/AKfycbzgPSQzxhqhgDu7SAcGFWcronRjkAMdJiGqU44q2QGIRQsf495N_YUu4YpoGJv4pzZ-/exec";
+    (function ensureGoogleScriptRunShim() {
+      if (window.google && window.google.script && window.google.script.run) return;
+      function makeRunner(onSuccess, onFailure) {
+        var methods = [
+          "apiLoadInitialData", "apiSaveFreeGeminiKey", "apiAddEvent", "apiBatchAddEvents",
+          "apiUpdateEventStatus", "apiToggleDailyDuty", "apiCreateGrade1HomeworkPack",
+          "apiSaveIkedaTrashSchedule", "apiSendThanksStamp", "apiAddMemo",
+          "apiBatchAddShoppingItems", "apiToggleMemoDone", "apiAddAnniversary",
+          "apiScanPrintImage", "apiParseMagicText", "apiSuggestDinnerMenus"
+        ];
+        var runner = {
+          withSuccessHandler: function(fn) { return makeRunner(fn, onFailure); },
+          withFailureHandler: function(fn) { return makeRunner(onSuccess, fn); }
+        };
+        methods.forEach(function(mName) {
+          runner[mName] = function() {
+            var allArgs = Array.prototype.slice.call(arguments);
+            var pinArg = allArgs[0] || "";
+            var restArgs = allArgs.slice(1);
+            var targetUrl = localStorage.getItem("family_cal_gas_url") || GAS_EXEC_URL;
+            fetch(targetUrl, {
+              method: "POST",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body: JSON.stringify({ action: mName, pin: pinArg, args: restArgs })
+            })
+              .then(function(r) {
+                return r.text().then(function(txt) {
+                  try { return JSON.parse(txt); }
+                  catch (parseErr) {
+                    throw new Error("Apps Scriptの「デプロイを管理 → ✏️編集 → アクセスできるユーザー：全員」に設定してください");
+                  }
+                });
+              })
+              .then(function(data) {
+                if (data && data.error) {
+                  if (onFailure) onFailure(new Error(data.message || "API Error"));
+                } else {
+                  if (onSuccess) onSuccess(data);
+                }
+              })
+              .catch(function(err) {
+                if (onFailure) onFailure(err);
+              });
+          };
+        });
+        return runner;
+      }
+      window.google = { script: { run: makeRunner(null, null), history: { replace: function() {} } } };
+    })();
+
+    var SERVER_AUTO_TOKEN = '';
+    var currentPin = '';
+    var appState = {
+      events: [],
+      dutiesMap: {},
+      memos: [],
+      anniversaries: [],
+      holidaysMap: {},
+      weatherMap: {},
+      thanksInfo: { count: 14, goal: 20, reward: '☕ 週末ご褒美スタバ＆ケーキ', lastMsg: '' },
+      trashConfig: { normalDays: '1,4', plasticDay: '3', resourceDay: '5' },
+      sheetUrl: ''
+    };
+    var selectedDateIso = '';
+    var currentMonthDate = new Date();
+    var showWorkOverlay = true;
+    var currentCatFilter = 'all';
+    var holidayCacheByYear = {};
+    var lastParsedMagicEvents = [];
+
+    /* 記憶用ヘルパー（localStorage ＋ Cookie ＋ GASアドレスバー自動付与の3重記憶） */
+    function saveAuthCredential(tokenOrPin) {
+      try { localStorage.setItem('family_cal_auth_v3', tokenOrPin); } catch (e) {}
+      try {
+        document.cookie = 'family_cal_auth_v3=' + encodeURIComponent(tokenOrPin) + '; path=/; max-age=31536000; SameSite=None; Secure';
+      } catch (e2) {}
+    }
+
+    function readSavedAuthCredential() {
+      if (SERVER_AUTO_TOKEN) return SERVER_AUTO_TOKEN;
+      try {
+        var ls = localStorage.getItem('family_cal_auth_v3') || localStorage.getItem('family_cal_pin');
+        if (ls) return ls;
+      } catch (e) {}
+      try {
+        var m = document.cookie.match(/(?:^|;\s*)family_cal_auth_v3=([^;]+)/);
+        if (m && m[1]) return decodeURIComponent(m[1]);
+      } catch (e2) {}
+      return '';
+    }
+
+    /* 大阪府池田市の月別平年気温（16日以上先の未来日をクリックしたときも服装が出るバックアップ） */
+    function buildIkedaClimateEstimate(iso) {
+      var m = Number((iso || '2026-11-22').split('-')[1]) || 11;
+      var table = {
+        1: [9, 1], 2: [10, 2], 3: [14, 5], 4: [20, 10],
+        5: [25, 15], 6: [28, 20], 7: [32, 24], 8: [34, 25],
+        9: [29, 21], 10: [23, 14], 11: [17, 9], 12: [12, 4]
+      };
+      var pair = table[m] || [17, 9];
+      var g = buildGuidanceFromNumbers(1, 20, pair[0], pair[1], []);
+      g.isClimateEstimate = true;
+      g.label = m + '月の池田市・平年気温目安';
+      return g;
+    }
+
+    /* スマホブラウザから直接 池田市(34.8217, 135.4285) の16日間・3時間ごと天気を0.15秒で高速取得 */
+    function fetchIkedaWeatherFromBrowser() {
+      if (!window.fetch) return;
+      var apiUrl =
+        'https:' + '//api.open-meteo.com/v1/forecast?latitude=34.8217&longitude=135.4285' +
+        '&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
+        '&hourly=temperature_2m,precipitation_probability,weathercode' +
+        '&timezone=Asia%2FTokyo&forecast_days=16';
+
+      window.fetch(apiUrl)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data || !data.daily || !data.daily.time) return;
+          var hourlyByDate = {};
+          if (data.hourly && data.hourly.time) {
+            var hTimes = data.hourly.time;
+            var hTemps = data.hourly.temperature_2m || [];
+            var hPops = data.hourly.precipitation_probability || [];
+            var hCodes = data.hourly.weathercode || [];
+            var keep = { '06': true, '09': true, '12': true, '15': true, '18': true, '21': true };
+            for (var h = 0; h < hTimes.length; h++) {
+              var tStr = String(hTimes[h]);
+              var dIso = tStr.slice(0, 10);
+              var hh = tStr.slice(11, 13);
+              if (!keep[hh]) continue;
+              if (!hourlyByDate[dIso]) hourlyByDate[dIso] = [];
+              var hCode = Number(hCodes[h] || 0);
+              var hPop = Number(hPops[h] || 0);
+              var hRain = hCode >= 51 || hPop >= 50;
+              var hCloud = hCode >= 2 && hCode < 51;
+              hourlyByDate[dIso].push({
+                hour: Number(hh) + '時',
+                hourNum: Number(hh),
+                temp: Math.round(Number(hTemps[h] || 18)),
+                pop: hPop,
+                icon: hRain ? '☔' : hCloud ? '⛅' : '☀️'
+              });
+            }
+          }
+          var times = data.daily.time;
+          var codes = data.daily.weathercode || [];
+          var maxT = data.daily.temperature_2m_max || [];
+          var minT = data.daily.temperature_2m_min || [];
+          var pops = data.daily.precipitation_probability_max || [];
+          if (!appState.weatherMap) appState.weatherMap = {};
+          for (var i = 0; i < times.length; i++) {
+            var dk = times[i];
+            appState.weatherMap[dk] = buildGuidanceFromNumbers(
+              Number(codes[i] || 0),
+              Number(pops[i] || 0),
+              Math.round(Number(maxT[i] || 18)),
+              Math.round(Number(minT[i] || 10)),
+              hourlyByDate[dk] || []
+            );
+          }
+          renderMonthGrid();
+          renderWeatherBanner();
+        })
+        .catch(function() {});
+    }
+
+    function buildGuidanceFromNumbers(code, pop, hi, lo, slots) {
+      var isRain = code >= 51 || pop >= 50;
+      var isCloudy = code >= 2 && code < 51;
+      var icon = isRain ? '☔' : isCloudy ? '⛅' : '☀️';
+      var label = isRain ? '雨予報' : isCloudy ? 'くもり' : '晴れ';
+
+      var morningRain = false;
+      var afternoonRain = false;
+      var morningTemp = lo;
+      for (var i = 0; i < slots.length; i++) {
+        var s = slots[i];
+        if (s.hourNum === 6 || s.hourNum === 9) {
+          morningTemp = s.temp;
+          if (s.pop >= 45 || s.icon === '☔') morningRain = true;
+        }
+        if (s.hourNum === 15 || s.hourNum === 18) {
+          if (s.pop >= 45 || s.icon === '☔') afternoonRain = true;
+        }
+      }
+
+      var laundryText = '';
+      if (!isRain && !afternoonRain && pop <= 25) {
+        laundryText = '☀️ 外干しバッチリ乾きます！（体操服・給食エプロンも外干しOK）';
+      } else if (!morningRain && afternoonRain) {
+        laundryText = '⚠️ 午前は晴れますが15時以降に雨予報！昼までに取り込むか部屋干しが安心';
+      } else if (isRain) {
+        laundryText = '☔ 雨予報（降水' + pop + '%）のため「部屋干し＋除湿機／浴室乾燥」がおすすめ';
+      } else {
+        laundryText = '⛅ 日差し少なめ。厚手の服や体操服は早め干しor部屋干し併用が安心';
+      }
+
+      var outfitPapa = '';
+      var outfitMama = '';
+      var outfitKid = '';
+
+      if (hi >= 25) {
+        outfitPapa = '半袖or薄手シャツ＋通気性の良いパンツ（社内冷房対策に薄手ジャケット）';
+        outfitMama = '半袖・薄手ブラウス＋日傘・UV羽織り（朝晩は薄手カーディガン）';
+        outfitKid = '半袖制服/ポロシャツ＋大きめ水筒・汗拭きタオル（予備の肌着1枚）';
+      } else if (hi >= 20) {
+        outfitPapa = '長袖シャツ＋薄手ジャケット（朝晩' + lo + '℃なので軽い羽織りが快適）';
+        outfitMama = '長袖トップス＋薄手カーディガンorトレンチ（脱ぎ着しやすい重ね着）';
+        outfitKid = '長袖シャツ＋通学ベスト（昼は' + hi + '℃まで上がるのでランドセルにしまえるベストが◎）';
+      } else if (hi >= 15) {
+        outfitPapa = 'シャツ＋ジャケットor薄手ニット（帰宅時は' + lo + '℃前後まで冷えます）';
+        outfitMama = 'ニットorブラウス＋軽めアウター・ストール（夕方の買い物・お迎えは冷え対策を）';
+        outfitKid = '長袖＋セーター/ベスト＋通学ジャンパー（朝の登校時は' + morningTemp + '℃なので上着必須）';
+      } else {
+        outfitPapa = '冬コート＋スーツ/厚手ニット＋マフラー（朝の池田市は' + morningTemp + '℃まで冷え込みます）';
+        outfitMama = '暖かコート/ダウン＋ニット＋足元防寒（朝の送り出し・夕方お迎えは手袋もあると安心）';
+        outfitKid = '私立小コート/厚手ジャンパー＋セーター＋ネックウォーマー＆手袋（ポケットにカイロ）';
+      }
+
+      if (morningRain || afternoonRain || isRain) {
+        var rainNote = morningRain ? '☔朝登校時から雨注意！' : '☔下校時（15時以降）雨注意！';
+        outfitKid += ' ／ ' + rainNote + '折りたたみ傘orレインコート＆ランドセル雨カバー・替え靴下を！';
+      }
+
+      var outingSpot = isRain
+        ? '🍜 雨でも快適：カップヌードルミュージアム大阪池田 ／ 五月山児童文化センター ／ EXPOCITY（ニフレル）'
+        : '🌳 池田市お出かけ日和：五月山公園＆五月山動物園（ウォンバット）＋水月公園でのびのび外遊び';
+
+      return {
+        icon: icon,
+        label: label,
+        maxTemp: hi,
+        minTemp: lo,
+        pop: pop,
+        isRain: isRain || afternoonRain,
+        hourlySlots: slots,
+        laundryText: laundryText,
+        outfitPapa: outfitPapa,
+        outfitMama: outfitMama,
+        outfitKid: outfitKid,
+        outingSpot: outingSpot
+      };
+    }
+
+    function buildBuiltinHolidaysForYear(year) {
+      if (holidayCacheByYear[year]) return holidayCacheByYear[year];
+      var map = {};
+      function pad2(v) { return ('0' + v).slice(-2); }
+      function key(m, d) { return year + '-' + pad2(m) + '-' + pad2(d); }
+
+      map[key(1, 1)] = '元日';
+      map[key(2, 11)] = '建国記念の日';
+      if (year >= 2020) map[key(2, 23)] = '天皇誕生日';
+      map[key(4, 29)] = '昭和の日';
+      map[key(5, 3)] = '憲法記念日';
+      map[key(5, 4)] = 'みどりの日';
+      map[key(5, 5)] = 'こどもの日';
+      if (year >= 2016) map[key(8, 11)] = '山の日';
+      map[key(11, 3)] = '文化の日';
+      map[key(11, 23)] = '勤労感謝の日';
+
+      for (var m = 1; m <= 12; m++) {
+        var firstDow = new Date(year, m - 1, 1).getDay();
+        var firstMon = 1 + ((8 - firstDow) % 7);
+        if (m === 1) map[key(1, firstMon + 7)] = '成人の日';
+        if (m === 7) map[key(7, firstMon + 14)] = '海の日';
+        if (m === 9) map[key(9, firstMon + 14)] = '敬老の日';
+        if (m === 10) map[key(10, firstMon + 7)] = 'スポーツの日';
+      }
+
+      var vernalDay = Math.floor(20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+      var autumnDay = Math.floor(23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+      map[key(3, vernalDay)] = '春分の日';
+      map[key(9, autumnDay)] = '秋分の日';
+
+      var sepFirstDow = new Date(year, 8, 1).getDay();
+      var keiroDay = 1 + ((8 - sepFirstDow) % 7) + 14;
+      if (autumnDay - keiroDay === 2) {
+        var betweenDate = new Date(year, 8, keiroDay + 1);
+        if (betweenDate.getDay() !== 0) map[key(9, keiroDay + 1)] = '国民の休日';
+      }
+
+      var baseKeys = Object.keys(map).sort();
+      for (var i = 0; i < baseKeys.length; i++) {
+        var parts = baseKeys[i].split('-');
+        var dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        if (dt.getDay() === 0) {
+          var sub = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
+          while (map[formatIsoLocal(sub)]) {
+            sub = new Date(sub.getFullYear(), sub.getMonth(), sub.getDate() + 1);
+          }
+          map[formatIsoLocal(sub)] = '振替休日';
+        }
+      }
+
+      holidayCacheByYear[year] = map;
+      return map;
+    }
+
+    function getJapaneseHolidayName(iso) {
+      if (!iso) return '';
+      if (appState.holidaysMap && appState.holidaysMap[iso]) return appState.holidaysMap[iso];
+      var y = Number(iso.split('-')[0]);
+      if (!y) return '';
+      return buildBuiltinHolidaysForYear(y)[iso] || '';
+    }
+
+    function getIkedaTrashLabelForDow(dow) {
+      var cfg = appState.trashConfig || { normalDays: '1,4', plasticDay: '3', resourceDay: '5' };
+      var normals = String(cfg.normalDays || '1,4').split(',');
+      var labels = [];
+      if (normals.indexOf(String(dow)) !== -1) labels.push('🔥普通ごみ');
+      if (String(cfg.plasticDay) === String(dow)) labels.push('♻️プラ容器');
+      if (String(cfg.resourceDay) === String(dow)) labels.push('🥫資源/古紙');
+      return labels.join('・');
+    }
+
+    function setToast(text) {
+      document.getElementById('toastBar').textContent = text;
+    }
+
+    function authenticateWithServer(credential, isSilentAuto) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            document.getElementById('pinOverlay').classList.remove('hidden');
+            if (!isSilentAuto) {
+              document.getElementById('pinError').textContent = (res && res.message) || '合言葉が違います';
+            }
+            return;
+          }
+          var tokenToSave = res.deviceToken || credential;
+          currentPin = tokenToSave;
+          saveAuthCredential(tokenToSave);
+
+          /* GAS標準 history API でアドレスバーにも自動ログイントークンを付与（ホーム画面追加でも永久自動ログイン！） */
+          try {
+            if (res.deviceToken && window.google && google.script && google.script.history) {
+              google.script.history.replace(null, { dt: res.deviceToken }, '');
+            }
+          } catch (e) {}
+
+          document.getElementById('pinOverlay').classList.add('hidden');
+          setToast('📍大阪府池田市 ＆ 🏫私立小1息子さんサポート');
+          applyServerState(res);
+          fetchIkedaWeatherFromBrowser();
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('pinOverlay').classList.remove('hidden');
+          document.getElementById('pinError').textContent = err.message || '通信エラーが発生しました';
+        })
+        .apiLoadInitialData(credential);
+    }
+
+    function unlockWithPin() {
+      var pin = document.getElementById('pinInput').value.trim();
+      if (!pin) return;
+      document.getElementById('pinError').textContent = 'ロック解除中...';
+      authenticateWithServer(pin, false);
+    }
+
+    function applyServerState(res) {
+      var preservedWeather = appState.weatherMap || {};
+      appState = res;
+      if (!appState.holidaysMap) appState.holidaysMap = {};
+      if (!appState.weatherMap) appState.weatherMap = {};
+      var pKeys = Object.keys(preservedWeather);
+      for (var k = 0; k < pKeys.length; k++) {
+        if (!appState.weatherMap[pKeys[k]] || (preservedWeather[pKeys[k]].hourlySlots && preservedWeather[pKeys[k]].hourlySlots.length > 0)) {
+          appState.weatherMap[pKeys[k]] = preservedWeather[pKeys[k]];
+        }
+      }
+
+      if (!appState.trashConfig) appState.trashConfig = { normalDays: '1,4', plasticDay: '3', resourceDay: '5' };
+      document.getElementById('trashNormalSelect').value = appState.trashConfig.normalDays || '1,4';
+      document.getElementById('trashPlasticSelect').value = appState.trashConfig.plasticDay || '3';
+      document.getElementById('trashResourceSelect').value = appState.trashConfig.resourceDay || '5';
+
+      if (res.hasGeminiKey) {
+        document.getElementById('geminiKeyBox').classList.add('hidden');
+      }
+
+      if (!selectedDateIso) {
+        selectedDateIso = res.todayIso;
+        var p = selectedDateIso.split('-');
+        currentMonthDate = new Date(Number(p[0]), Number(p[1]) - 1, 1);
+        document.getElementById('formDate').value = selectedDateIso;
+      }
+      if (res.sheetUrl) {
+        var wrap = document.getElementById('sheetLinkWrap');
+        wrap.innerHTML = '';
+        var a = document.createElement('a');
+        a.href = res.sheetUrl;
+        a.target = '_blank';
+        a.style.color = '#786c63';
+        a.textContent = '📊 個人ドライブの保存スプレッドシートを開く';
+        wrap.appendChild(a);
+      }
+      renderAll();
+    }
+
+    function renderThanksBar() {
+      var info = appState.thanksInfo || { count: 14, goal: 20, reward: '☕ 週末ご褒美スタバ＆ケーキ', lastMsg: '' };
+      var pct = Math.min(100, Math.round((info.count / Math.max(info.goal, 1)) * 100));
+      document.getElementById('thanksCountText').textContent = info.count + ' / ' + info.goal + 'pt (' + pct + '%)';
+      document.getElementById('thanksMeterFill').style.width = pct + '%';
+      document.getElementById('thanksRewardText').textContent = '🎁 ご褒美：' + info.reward;
+      document.getElementById('thanksLastMsg').textContent = info.lastMsg || '';
+    }
+
+    function sendQuickThanks() {
+      var msgs = [
+        '💝 毎日の私立小の宿題フォローとお便りチェック本当にありがとう！',
+        '💐 今日も1日お疲れさま！いつも助かっています！',
+        '☕ 今週末はご褒美カフェに行こうね！いつもありがとう！'
+      ];
+      var pick = msgs[Math.floor(Math.random() * msgs.length)];
+      setToast('💐 ありがとうスタンプを送信中...');
+      google.script.run
+        .withSuccessHandler(function(res) {
+          applyServerState(res);
+          setToast('💐 ありがとうポイントが +1 貯まりました！');
+        })
+        .apiSendThanksStamp(currentPin, pick, '');
+    }
+
+    function switchTab(tab) {
+      var tabs = ['cal', 'school', 'dinner', 'add', 'memo'];
+      for (var i = 0; i < tabs.length; i++) {
+        var t = tabs[i];
+        document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+      }
+    }
+
+    function toggleWorkOverlay() {
+      showWorkOverlay = !showWorkOverlay;
+      var btn = document.getElementById('workBtn');
+      btn.textContent = showWorkOverlay ? '💼 仕事重ね: ON' : '🏡 仕事重ね: OFF';
+      btn.className = showWorkOverlay ? 'btn btn-work-on' : 'btn';
+      renderAll();
+    }
+
+    function setCatFilter(cat) {
+      currentCatFilter = cat;
+      var cats = ['all', 'family', 'kids', 'mama', 'papa'];
+      for (var i = 0; i < cats.length; i++) {
+        document.getElementById('f-' + cats[i]).classList.toggle('active', cats[i] === cat);
+      }
+      renderAll();
+    }
+
+    function formatIsoLocal(d) {
+      var y = d.getFullYear();
+      var m = ('0' + (d.getMonth() + 1)).slice(-2);
+      var day = ('0' + d.getDate()).slice(-2);
+      return y + '-' + m + '-' + day;
+    }
+
+    function shiftMonth(delta) {
+      currentMonthDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + delta, 1);
+      renderMonthGrid();
+    }
+
+    function goToday() {
+      var t = appState.todayIso || formatIsoLocal(new Date());
+      selectedDateIso = t;
+      var p = t.split('-');
+      currentMonthDate = new Date(Number(p[0]), Number(p[1]) - 1, 1);
+      document.getElementById('formDate').value = selectedDateIso;
+      renderAll();
+    }
+
+    function renderMonthGrid() {
+      var grid = document.getElementById('monthGrid');
+      grid.innerHTML = '';
+      var year = currentMonthDate.getFullYear();
+      var month = currentMonthDate.getMonth();
+      document.getElementById('currentMonthLabel').textContent = year + '年 ' + (month + 1) + '月（池田市）';
+
+      var firstDay = new Date(year, month, 1);
+      var startOffset = firstDay.getDay();
+      var startCellDate = new Date(year, month, 1 - startOffset);
+
+      for (var i = 0; i < 42; i++) {
+        var d = new Date(startCellDate.getFullYear(), startCellDate.getMonth(), startCellDate.getDate() + i);
+        if (i >= 35 && d.getMonth() !== month) break;
+        var iso = formatIsoLocal(d);
+        var md = ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+        var holidayName = getJapaneseHolidayName(iso);
+        var wInfo = appState.weatherMap && appState.weatherMap[iso];
+        var trashLabel = getIkedaTrashLabelForDow(d.getDay());
+
+        var cell = document.createElement('button');
+        cell.className = 'day-cell' +
+          (d.getMonth() !== month ? ' other-month' : '') +
+          (iso === selectedDateIso ? ' selected' : '');
+
+        cell.onclick = (function(targetIso) {
+          return function() {
+            selectedDateIso = targetIso;
+            document.getElementById('formDate').value = targetIso;
+            renderAll();
+          };
+        })(iso);
+
+        var topLine = document.createElement('div');
+        topLine.style.display = 'flex';
+        topLine.style.alignItems = 'center';
+        topLine.style.justifyContent = 'center';
+        topLine.style.gap = '2px';
+
+        var numDiv = document.createElement('span');
+        numDiv.style.fontWeight = '800';
+        numDiv.style.fontSize = '12px';
+        if (d.getDay() === 0 || holidayName) {
+          numDiv.style.color = '#c92a49';
+        } else if (d.getDay() === 6) {
+          numDiv.style.color = '#0b69a3';
+        }
+        numDiv.textContent = String(d.getDate());
+        topLine.appendChild(numDiv);
+
+        if (wInfo) {
+          var wSpan = document.createElement('span');
+          wSpan.style.fontSize = '10px';
+          wSpan.textContent = wInfo.icon;
+          topLine.appendChild(wSpan);
+        }
+        cell.appendChild(topLine);
+
+        if (holidayName) {
+          var holDiv = document.createElement('div');
+          holDiv.style.fontSize = '9px';
+          holDiv.style.color = '#c92a49';
+          holDiv.style.fontWeight = '700';
+          holDiv.style.lineHeight = '1.1';
+          holDiv.style.maxWidth = '100%';
+          holDiv.style.overflow = 'hidden';
+          holDiv.style.whiteSpace = 'nowrap';
+          holDiv.textContent = holidayName.slice(0, 4);
+          cell.appendChild(holDiv);
+        } else if (trashLabel) {
+          var trDiv = document.createElement('div');
+          trDiv.style.fontSize = '8px';
+          trDiv.style.color = '#2b8a3e';
+          trDiv.style.lineHeight = '1.1';
+          trDiv.style.maxWidth = '100%';
+          trDiv.style.overflow = 'hidden';
+          trDiv.style.whiteSpace = 'nowrap';
+          trDiv.textContent = trashLabel.slice(0, 5);
+          cell.appendChild(trDiv);
+        }
+
+        var dotRow = document.createElement('div');
+        dotRow.className = 'dot-row';
+
+        for (var a = 0; a < appState.anniversaries.length; a++) {
+          if (appState.anniversaries[a].monthDay === md) {
+            var aSpan = document.createElement('span');
+            aSpan.style.fontSize = '10px';
+            aSpan.textContent = appState.anniversaries[a].icon;
+            dotRow.appendChild(aSpan);
+          }
+        }
+
+        var dayEvs = appState.events.filter(function(ev) {
+          if (ev.date !== iso) return false;
+          if (!showWorkOverlay && ev.category === 'work') return false;
+          if (currentCatFilter !== 'all' && ev.category !== currentCatFilter) return false;
+          return true;
+        });
+
+        for (var e = 0; e < Math.min(dayEvs.length, 4); e++) {
+          var dot = document.createElement('span');
+          dot.className = 'dot dot-' + (dayEvs[e].category || 'family');
+          dotRow.appendChild(dot);
+        }
+
+        cell.appendChild(dotRow);
+        grid.appendChild(cell);
+      }
+    }
+
+    function renderTrashBanner() {
+      var box = document.getElementById('trashBannerBox');
+      var targetIso = selectedDateIso || formatIsoLocal(new Date());
+      var parts = targetIso.split('-');
+      if (parts.length !== 3) return;
+      var dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      var nextDt = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
+      var todayTrash = getIkedaTrashLabelForDow(dt.getDay());
+      var tomorrowTrash = getIkedaTrashLabelForDow(nextDt.getDay());
+
+      box.innerHTML = '';
+      var line1 = document.createElement('div');
+      line1.style.fontWeight = '800';
+      line1.textContent = '🗑️ 池田市ゴミ収集：当日朝＝' + (todayTrash || '収集なし') + ' ／ 🌙前日夜準備（明日分）＝' + (tomorrowTrash || '収集なし');
+      box.appendChild(line1);
+    }
+
+    function renderWeatherBanner() {
+      var box = document.getElementById('weatherBannerBox');
+      var targetIso = selectedDateIso || formatIsoLocal(new Date());
+      var w = (appState.weatherMap && appState.weatherMap[targetIso]) || buildIkedaClimateEstimate(targetIso);
+
+      box.classList.remove('hidden');
+      box.innerHTML = '';
+
+      var top = document.createElement('div');
+      top.className = 'row-between';
+
+      var title = document.createElement('div');
+      title.style.fontWeight = '800';
+      title.style.fontSize = '13px';
+      if (w.isClimateEstimate) {
+        title.textContent = '📍大阪府池田市 ' + targetIso.slice(5).replace('-', '/') + '：' + w.label + '（最高 ' + w.maxTemp + '℃ / 最低 ' + w.minTemp + '℃）';
+      } else {
+        title.textContent = '📍大阪府池田市 ' + targetIso.slice(5).replace('-', '/') + '：' + w.icon + w.label + '（最高 ' + w.maxTemp + '℃ / 最低 ' + w.minTemp + '℃・降水 ' + w.pop + '%）';
+      }
+      top.appendChild(title);
+
+      if (w.isRain && !w.isClimateEstimate) {
+        var rainBtn = document.createElement('button');
+        rainBtn.className = 'btn btn-primary';
+        rainBtn.style.fontSize = '11px';
+        rainBtn.style.padding = '4px 9px';
+        rainBtn.textContent = '☔ 送迎をパパお願い！にする';
+        rainBtn.onclick = function() {
+          google.script.run
+            .withSuccessHandler(function(res) {
+              applyServerState(res);
+              setToast('☔ 雨予報のため送迎を『👨パパお願い！』にバトンタッチしました！');
+            })
+            .apiToggleDailyDuty(currentPin, targetIso, 'pickupDuty', '👨パパお願い！');
+        };
+        top.appendChild(rainBtn);
+      }
+      box.appendChild(top);
+
+      if (w.hourlySlots && w.hourlySlots.length > 0) {
+        var strip = document.createElement('div');
+        strip.className = 'hourly-strip';
+        for (var i = 0; i < w.hourlySlots.length; i++) {
+          var s = w.hourlySlots[i];
+          var hc = document.createElement('div');
+          hc.className = 'hourly-cell';
+          var hDiv = document.createElement('div');
+          hDiv.style.fontWeight = '700';
+          hDiv.textContent = s.hour;
+          var iDiv = document.createElement('div');
+          iDiv.style.fontSize = '14px';
+          iDiv.textContent = s.icon;
+          var tDiv = document.createElement('div');
+          tDiv.style.fontWeight = '800';
+          tDiv.textContent = s.temp + '℃';
+          var pDiv = document.createElement('div');
+          pDiv.className = 'sub-text';
+          pDiv.style.fontSize = '10px';
+          pDiv.textContent = '☔' + s.pop + '%';
+          hc.appendChild(hDiv);
+          hc.appendChild(iDiv);
+          hc.appendChild(tDiv);
+          hc.appendChild(pDiv);
+          strip.appendChild(hc);
+        }
+        box.appendChild(strip);
+      }
+
+      if (!w.isClimateEstimate) {
+        var lDiv = document.createElement('div');
+        lDiv.style.fontSize = '12px';
+        lDiv.style.fontWeight = '700';
+        lDiv.style.marginTop = '4px';
+        lDiv.textContent = '👕 池田市・洗濯ナビ：' + w.laundryText;
+        box.appendChild(lDiv);
+      }
+
+      var oBox = document.createElement('div');
+      oBox.className = 'outfit-box';
+      var o1 = document.createElement('div');
+      o1.textContent = '👔 パパ服装：' + w.outfitPapa;
+      var o2 = document.createElement('div');
+      o2.style.marginTop = '4px';
+      o2.textContent = '👗 ママ服装：' + w.outfitMama;
+      var o3 = document.createElement('div');
+      o3.style.marginTop = '4px';
+      o3.style.fontWeight = '700';
+      o3.style.color = '#137a4b';
+      o3.textContent = '🧒 6歳・小1息子さん（通学・外遊び）：' + w.outfitKid;
+      oBox.appendChild(o1);
+      oBox.appendChild(o2);
+      oBox.appendChild(o3);
+      box.appendChild(oBox);
+
+      var spDiv = document.createElement('div');
+      spDiv.className = 'sub-text';
+      spDiv.style.marginTop = '6px';
+      spDiv.textContent = w.outingSpot;
+      box.appendChild(spDiv);
+    }
+
+    function renderDutiesAndEvents() {
+      var targetIso = selectedDateIso || formatIsoLocal(new Date());
+      var selHoliday = getJapaneseHolidayName(targetIso);
+      var headingEl = document.getElementById('selectedDateHeading');
+      headingEl.textContent = targetIso + (selHoliday ? '（㊗️' + selHoliday + '）' : '') + ' の担当と予定';
+      var dutyRec = appState.dutiesMap[targetIso] || {
+        pickupDuty: '👩ママ担当',
+        dinnerDuty: '👩ママ担当',
+        houseworkDuty: '👨パパお願い！'
+      };
+      var dutyGrid = document.getElementById('dutyGrid');
+      dutyGrid.innerHTML = '';
+      var defs = [
+        { key: 'pickupDuty', label: '🚲 送迎・通学' },
+        { key: 'dinnerDuty', label: '🍳 夕飯・買い物' },
+        { key: 'houseworkDuty', label: '📚 小1宿題・ゴミ出し' }
+      ];
+      defs.forEach(function(def) {
+        var btn = document.createElement('button');
+        btn.className = 'duty-btn';
+        var curVal = dutyRec[def.key];
+        btn.onclick = function() {
+          var order = ['👨パパお願い！', '👩ママ担当', '🤝ふたりで'];
+          var idx = order.indexOf(curVal);
+          var nextVal = order[(idx + 1) % order.length];
+          setToast('担当スタンプを更新中...');
+          google.script.run
+            .withSuccessHandler(function(res) {
+              applyServerState(res);
+              setToast(def.label + ' を『' + nextVal + '』に切り替えました（💐+1pt）');
+            })
+            .apiToggleDailyDuty(currentPin, targetIso, def.key, nextVal);
+        };
+        var l = document.createElement('div');
+        l.className = 'duty-label';
+        l.textContent = def.label;
+        var v = document.createElement('div');
+        v.className = 'duty-val';
+        v.textContent = curVal;
+        btn.appendChild(l);
+        btn.appendChild(v);
+        dutyGrid.appendChild(btn);
+      });
+
+      var listEl = document.getElementById('eventList');
+      listEl.innerHTML = '';
+      var dayEvents = appState.events.filter(function(ev) {
+        if (ev.date !== targetIso) return false;
+        if (!showWorkOverlay && ev.category === 'work') return false;
+        if (currentCatFilter !== 'all' && ev.category !== currentCatFilter) return false;
+        return true;
+      });
+
+      if (dayEvents.length === 0) {
+        var empty = document.createElement('div');
+        empty.className = 'sub-text';
+        empty.style.textAlign = 'center';
+        empty.style.padding = '14px 0';
+        empty.textContent = 'この日の予定はまだありません（「🏫小1宿題・お便り」タブから1タップで宿題チェックを追加できます）';
+        listEl.appendChild(empty);
+        return;
+      }
+
+      dayEvents.forEach(function(ev) {
+        var item = document.createElement('div');
+        item.className = 'event-item';
+
+        var topRow = document.createElement('div');
+        topRow.className = 'row-between';
+
+        var leftInfo = document.createElement('div');
+        var catPill = document.createElement('span');
+        catPill.className = 'pill cat-' + (ev.category || 'family');
+        catPill.textContent = ev.timeSlot || '終日';
+        leftInfo.appendChild(catPill);
+
+        var titleDiv = document.createElement('div');
+        titleDiv.style.fontWeight = '800';
+        titleDiv.style.marginTop = '4px';
+        titleDiv.textContent = ev.title;
+        leftInfo.appendChild(titleDiv);
+
+        var whoBtn = document.createElement('button');
+        whoBtn.className = 'btn';
+        whoBtn.textContent = ev.assignee;
+        if (!ev.isExternalGcal) {
+          whoBtn.onclick = function() {
+            var order = ['👨パパお願い！', '👩ママ担当', '🤝ふたりで'];
+            var idx = order.indexOf(ev.assignee);
+            var nextWho = order[(idx + 1) % order.length];
+            setToast('担当スタンプを変更中...');
+            google.script.run
+              .withSuccessHandler(function(res) {
+                applyServerState(res);
+                setToast('「' + ev.title + '」を『' + nextWho + '』に変更しました（💐+1pt）');
+              })
+              .apiUpdateEventStatus(currentPin, ev.eventId, nextWho, ev.checklist || []);
+          };
+        }
+
+        topRow.appendChild(leftInfo);
+        topRow.appendChild(whoBtn);
+        item.appendChild(topRow);
+
+        if (ev.checklist && ev.checklist.length > 0) {
+          var bagWrap = document.createElement('div');
+          bagWrap.className = 'bag-list';
+          ev.checklist.forEach(function(bag, bIdx) {
+            var bBtn = document.createElement('button');
+            bBtn.className = 'bag-btn' + (bag.done ? ' done' : '');
+            bBtn.textContent = (bag.done ? '✅ ' : '🎒 ') + bag.text;
+            bBtn.onclick = function() {
+              ev.checklist[bIdx].done = !ev.checklist[bIdx].done;
+              google.script.run
+                .withSuccessHandler(function(res) { applyServerState(res); })
+                .apiUpdateEventStatus(currentPin, ev.eventId, ev.assignee, ev.checklist);
+            };
+            bagWrap.appendChild(bBtn);
+          });
+          item.appendChild(bagWrap);
+        }
+
+        listEl.appendChild(item);
+      });
+    }
+
+    function addGrade1Homework(who) {
+      setToast('🏫 小1宿題＆時間割チェックリストを作成中...');
+      google.script.run
+        .withSuccessHandler(function(res) {
+          applyServerState(res);
+          switchTab('cal');
+          setToast('🏫 ' + selectedDateIso + ' に小1宿題＆時間割チェックリストを追加しました！');
+        })
+        .apiCreateGrade1HomeworkPack(currentPin, selectedDateIso, who, []);
+    }
+
+    function fillSampleMagicText() {
+      document.getElementById('magicTextInput').value =
+        '11/25 朝登校時に校外学習の同意書提出、ママ担当。持ち物は水筒と探検バインダーと名札。\n' +
+        '11/27 14:00 私立小のクラス懇談会、ママ担当。持ち物は保護者証とスリッパ。\n' +
+        '11/28 17:00 宿題の漢字プリント3枚と計算ドリルと音読カード提出、パパお願い！';
+    }
+
+    function runMagicParse() {
+      var raw = document.getElementById('magicTextInput').value.trim();
+      if (!raw) {
+        fillSampleMagicText();
+        raw = document.getElementById('magicTextInput').value.trim();
+      }
+      var box = document.getElementById('magicPreviewBox');
+      box.innerHTML = '<div class="sub-text">🪄 学校お便り文から日時・提出期限・持ち物を自動分解しています...</div>';
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          lastParsedMagicEvents = (res && res.events) || [];
+          renderMagicPreview();
+        })
+        .withFailureHandler(function(err) {
+          box.innerHTML = '<div class="sub-text" style="color:#c92a49;">エラー: ' + (err.message || '') + '</div>';
+        })
+        .apiParseMagicText(currentPin, raw, selectedDateIso);
+    }
+
+    function renderMagicPreview() {
+      var box = document.getElementById('magicPreviewBox');
+      box.innerHTML = '';
+      if (!lastParsedMagicEvents.length) return;
+
+      var title = document.createElement('div');
+      title.style.fontWeight = '800';
+      title.style.fontSize = '13px';
+      title.style.marginBottom = '6px';
+      title.textContent = '✨ ' + lastParsedMagicEvents.length + '件の学校予定・宿題・持ち物を自動検出しました！';
+      box.appendChild(title);
+
+      lastParsedMagicEvents.forEach(function(ev) {
+        var card = document.createElement('div');
+        card.className = 'event-item cat-' + (ev.category || 'kids');
+        var bagsTxt = (ev.checklist || []).map(function(b) { return b.text; }).join('・');
+        card.textContent = '📅 ' + ev.date + ' (' + ev.timeSlot + ') ' + ev.title + ' [' + ev.assignee + ']' + (bagsTxt ? ' 🎒' + bagsTxt : '');
+        box.appendChild(card);
+      });
+
+      var regBtn = document.createElement('button');
+      regBtn.className = 'btn btn-primary';
+      regBtn.style.width = '100%';
+      regBtn.style.padding = '11px';
+      regBtn.textContent = '👆 この ' + lastParsedMagicEvents.length + '件 をカレンダーへ一括登録する';
+      regBtn.onclick = function() {
+        setToast('🪄 一括登録中...');
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (lastParsedMagicEvents[0] && lastParsedMagicEvents[0].date) {
+              selectedDateIso = lastParsedMagicEvents[0].date;
+            }
+            document.getElementById('magicTextInput').value = '';
+            box.innerHTML = '';
+            applyServerState(res);
+            switchTab('cal');
+            setToast('🪄 ' + lastParsedMagicEvents.length + '件の学校お便り・宿題を一発登録しました！');
+          })
+          .apiBatchAddEvents(currentPin, lastParsedMagicEvents);
+      };
+      box.appendChild(regBtn);
+    }
+
+    function saveGeminiKeyFromUi() {
+      var k = document.getElementById('geminiKeyInput').value.trim();
+      if (!k) return;
+      google.script.run
+        .withSuccessHandler(function() {
+          document.getElementById('geminiKeyInput').value = '';
+          document.getElementById('geminiKeyBox').classList.add('hidden');
+          document.getElementById('scanStatus').textContent = '✅ 無料Gemini APIキーを安全に保存しました！カメラ撮影から直接読取できます。';
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('scanStatus').textContent = '⚠️ ' + (err.message || '');
+        })
+        .apiSaveFreeGeminiKey(currentPin, k);
+    }
+
+    function setFridgePreset(txt) {
+      document.getElementById('fridgeInput').value = txt;
+      runDinnerConcierge();
+    }
+
+    function runDinnerConcierge() {
+      var ing = document.getElementById('fridgeInput').value.trim();
+      var box = document.getElementById('dinnerSuggestionsBox');
+      box.innerHTML = '<div class="sub-text">🍳 冷蔵庫の食材から小1男子も喜ぶ15分献立と買い物リストを作成中...</div>';
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          var menus = (res && res.menus) || [];
+          box.innerHTML = '';
+          menus.forEach(function(m) {
+            var card = document.createElement('div');
+            card.className = 'event-item';
+            card.style.background = '#fffdf9';
+
+            var t = document.createElement('div');
+            t.style.fontWeight = '800';
+            t.style.fontSize = '14px';
+            t.textContent = m.title + '（' + m.time + '）';
+            card.appendChild(t);
+
+            var d = document.createElement('div');
+            d.className = 'sub-text';
+            d.style.marginTop = '4px';
+            d.textContent = m.desc;
+            card.appendChild(d);
+
+            var buy = document.createElement('div');
+            buy.style.fontSize = '12px';
+            buy.style.fontWeight = '700';
+            buy.style.marginTop = '6px';
+            buy.textContent = '🛒 買い足し候補：' + (m.buyItems || []).join('、');
+            card.appendChild(buy);
+
+            var btn = document.createElement('button');
+            btn.className = 'btn btn-primary';
+            btn.style.width = '100%';
+            btn.style.marginTop = '8px';
+            btn.textContent = '👆 今夜の献立に決定＆足りない食材を買い物メモへ自動追加';
+            btn.onclick = function() {
+              setToast('🍳 献立と買い物メモを自動登録中...');
+              google.script.run
+                .withSuccessHandler(function(stateRes) {
+                  applyServerState(stateRes);
+                  switchTab('memo');
+                  setToast('🍳「' + m.title + '」と買い物メモを一括追加しました！');
+                })
+                .apiBatchAddShoppingItems(currentPin, m.buyItems || [], m.title, selectedDateIso);
+            };
+            card.appendChild(btn);
+            box.appendChild(card);
+          });
+        })
+        .apiSuggestDinnerMenus(currentPin, ing);
+    }
+
+    function saveTrashSettings() {
+      var n = document.getElementById('trashNormalSelect').value;
+      var p = document.getElementById('trashPlasticSelect').value;
+      var r = document.getElementById('trashResourceSelect').value;
+      setToast('🗑️ 池田市のゴミ収集曜日を保存中...');
+      google.script.run
+        .withSuccessHandler(function(res) {
+          applyServerState(res);
+          switchTab('cal');
+          setToast('🗑️ 池田市のゴミ収集曜日をカレンダーへ反映しました！');
+        })
+        .apiSaveIkedaTrashSchedule(currentPin, n, p, r);
+    }
+
+    function submitNewEvent() {
+      var dateVal = document.getElementById('formDate').value || selectedDateIso;
+      var timeVal = document.getElementById('formTime').value.trim();
+      var catVal = document.getElementById('formCategory').value;
+      var titleVal = document.getElementById('formTitle').value.trim();
+      var assigneeVal = document.getElementById('formAssignee').value;
+      var bagsRaw = document.getElementById('formBags').value.trim();
+
+      if (!titleVal) {
+        setToast('予定タイトルを入力してください');
+        return;
+      }
+      var checklist = bagsRaw
+        ? bagsRaw.split(',').map(function(s) { return { text: s.trim(), done: false }; }).filter(function(i) { return i.text; })
+        : [];
+
+      setToast('カレンダーに登録中...');
+      google.script.run
+        .withSuccessHandler(function(res) {
+          document.getElementById('formTitle').value = '';
+          document.getElementById('formBags').value = '';
+          selectedDateIso = dateVal;
+          applyServerState(res);
+          switchTab('cal');
+          setToast('予定を登録しました！');
+        })
+        .apiAddEvent(currentPin, {
+          date: dateVal,
+          timeSlot: timeVal,
+          category: catVal,
+          title: titleVal,
+          assignee: assigneeVal,
+          checklist: checklist
+        });
+    }
+
+    function handlePrintFile(inputEl) {
+      var file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+      var statusEl = document.getElementById('scanStatus');
+      statusEl.textContent = '📸 AIがプリントから日時と持ち物を読み取っています...';
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var dataUrl = e.target.result;
+        var base64Data = dataUrl.split(',')[1];
+        google.script.run
+          .withSuccessHandler(function(extracted) {
+            statusEl.textContent = '✨ 読み取り完了！「' + extracted.title + '」を登録フォームにセットしました。';
+            document.getElementById('formDate').value = extracted.date || selectedDateIso;
+            document.getElementById('formTime').value = extracted.timeSlot || '終日';
+            document.getElementById('formCategory').value = extracted.category || 'kids';
+            document.getElementById('formTitle').value = extracted.title || '';
+            document.getElementById('formAssignee').value = extracted.assignee || '🤝ふたりで';
+            document.getElementById('formBags').value = Array.isArray(extracted.items) ? extracted.items.join(', ') : '';
+            switchTab('add');
+          })
+          .withFailureHandler(function(err) {
+            statusEl.textContent = '⚠️ ' + (err.message || '読み取りエラーが発生しました');
+          })
+          .apiScanPrintImage(currentPin, base64Data, file.type);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderMemosAndAnnivs() {
+      var box = document.getElementById('memoListBox');
+      box.innerHTML = '';
+      appState.memos.forEach(function(m) {
+        var row = document.createElement('div');
+        row.className = 'row-between';
+        row.style.marginBottom = '6px';
+
+        var btn = document.createElement('button');
+        btn.className = 'bag-btn' + (m.isDone ? ' done' : '');
+        btn.style.flex = '1';
+        btn.style.textAlign = 'left';
+        var prefix = m.memoType === 'weekend' ? '🎠 ' : '🛒 ';
+        btn.textContent = (m.isDone ? '✅ ' : '⬜ ') + prefix + m.content + ' (' + m.addedBy + ')';
+        btn.onclick = function() {
+          google.script.run
+            .withSuccessHandler(function(res) { applyServerState(res); })
+            .apiToggleMemoDone(currentPin, m.memoId);
+        };
+        row.appendChild(btn);
+
+        if (m.memoType === 'weekend' && !m.isDone) {
+          var planBtn = document.createElement('button');
+          planBtn.className = 'btn';
+          planBtn.textContent = '📅予定化';
+          planBtn.onclick = function() {
+            document.getElementById('formTitle').value = m.content;
+            document.getElementById('formCategory').value = 'family';
+            switchTab('add');
+          };
+          row.appendChild(planBtn);
+        }
+
+        box.appendChild(row);
+      });
+
+      var aBox = document.getElementById('annivListBox');
+      aBox.innerHTML = '';
+      appState.anniversaries.forEach(function(an) {
+        var row = document.createElement('div');
+        row.className = 'event-item cat-mama';
+        row.textContent = an.icon + ' 毎年 ' + an.monthDay.replace('-', '月') + '日：' + an.title;
+        aBox.appendChild(row);
+      });
+    }
+
+    function submitNewMemo() {
+      var inp = document.getElementById('newMemoText');
+      var val = inp.value.trim();
+      if (!val) return;
+      var who = document.getElementById('newMemoWho').value;
+      var mType = document.getElementById('newMemoType').value;
+      inp.value = '';
+      google.script.run
+        .withSuccessHandler(function(res) { applyServerState(res); })
+        .apiAddMemo(currentPin, { memoType: mType, content: val, addedBy: who });
+    }
+
+    function submitNewAnniv() {
+      var md = document.getElementById('newAnnivMd').value.trim();
+      var title = document.getElementById('newAnnivTitle').value.trim();
+      if (!md || !title) return;
+      document.getElementById('newAnnivMd').value = '';
+      document.getElementById('newAnnivTitle').value = '';
+      google.script.run
+        .withSuccessHandler(function(res) { applyServerState(res); })
+        .apiAddAnniversary(currentPin, md, title, '🎂');
+    }
+
+    function renderAll() {
+      renderThanksBar();
+      renderWeatherBanner();
+      renderMonthGrid();
+      renderTrashBanner();
+      renderDutiesAndEvents();
+      renderMemosAndAnnivs();
+    }
+
+    /* 起動時：まずその日の池田市お天気を即座に取得しつつ、記憶済みトークンがあればパスワード画面を一切出さずに自動ログイン！ */
+    (function initBoot() {
+      selectedDateIso = formatIsoLocal(new Date());
+      renderWeatherBanner();
+      fetchIkedaWeatherFromBrowser();
+
+      var saved = readSavedAuthCredential();
+      if (saved) {
+        currentPin = saved;
+        authenticateWithServer(saved, true);
+      } else {
+        document.getElementById('pinOverlay').classList.remove('hidden');
+      }
+    })();
+  </script>
+</body>
+</html>
