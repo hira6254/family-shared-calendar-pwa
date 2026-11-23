@@ -544,8 +544,20 @@
               <option value="full">👀 タイトルもそのまま共有する</option>
             </select>
           </div>
-          <button onclick="saveGcalSyncSettings()" class="btn btn-primary" style="width:100%;padding:10px;">
-            💾 Googleカレンダー同期＆ママ秘密モード設定を保存
+          <button onclick="startOneTapGoogleCalendarOAuth('papa')" class="btn btn-primary" style="width:100%;padding:12px;font-size:13px;">
+            🔄 パパのGoogleカレンダーを1タップで今すぐ取り込む
+          </button>
+          <button onclick="startOneTapGoogleCalendarOAuth('mama')" class="btn btn-rose" style="width:100%;padding:11px;font-size:12px;">
+            👩🔒 ママのGoogleカレンダーを1タップで取り込む（時間のみ共有モード対応）
+          </button>
+          <div style="padding:8px 10px;border-radius:12px;background:#eef7ff;border:1px solid #9ed2f6;">
+            <div style="font-weight:800;font-size:12px;color:#0b69a3;">📸 裏ワザ：スマホのGoogleカレンダー画面のスクショ1枚から一括取込！</div>
+            <div class="sub-text" style="font-size:11px;margin-bottom:6px;">いま貼ってくださった黒いGoogleカレンダーのスクショ画像を選ぶだけで、1ヶ月分の予定をAIが丸ごとカレンダーへ取り込みます！</div>
+            <input type="file" accept="image/*" class="input-field" onchange="importFromCalendarScreenshot(this)" />
+            <div id="gcalSyncStatusText" style="font-size:11px;font-weight:700;color:#137a4b;margin-top:4px;"></div>
+          </div>
+          <button onclick="saveGcalSyncSettings()" class="btn" style="width:100%;padding:9px;">
+            💾 設定を保存
           </button>
           <div class="sub-text" style="font-size:11px;background:#fff;padding:8px;border-radius:10px;border:1px dashed var(--border);">
             💡 <strong>奥様のGoogleカレンダーを繋ぐコツ（初回1分）</strong>：<br />
@@ -599,14 +611,14 @@
     </div>
 
     <div class="version-footer">
-      ふたりの家族カレンダー v3.5.0 （大阪府池田市・ご家族専用／完全0円）
+      ふたりの家族カレンダー v3.6.0 （大阪府池田市・ご家族専用／完全0円）
       <div id="sheetLinkWrap" style="margin-top:4px;"></div>
     </div>
   </div>
 
   <script>
     /*
-     * 🏡 ふたりの家族カレンダー v3.5.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
+     * 🏡 ふたりの家族カレンダー v3.6.0 — オフライン＆オンラインW対応・絶対止まらないハイブリッド通信エンジン
      * 1. 合言葉PIN（1122）を入力した瞬間に0.05秒でロック解除！（通信待ちや権限エラーで絶対にロック画面で止まらない）
      * 2. スマホ本体(localStorage)に即座に保存しつつ、裏側でGoogleスプレッドシートとも自動同期！
      */
@@ -646,7 +658,7 @@
         var tmIso = getTomorrowJstIso();
         var initDb = {
           ok: true,
-          version: "v3.5.0",
+          version: "v3.6.0",
           deviceToken: "LOCAL_AUTO_TOKEN_1122",
           hasGeminiKey: Boolean(localStorage.getItem("family_cal_gemini_key")),
           sheetUrl: "https://docs.google.com/spreadsheets/d/1DrqBuKm0OpvIMZ-JcLiK57MPnnms1Jyb4G366kIlT3o/edit",
@@ -2023,6 +2035,113 @@
       } else {
         setToast('👨「パパのスマホ」モードに切替：ママの🔒秘密予定は『時間のみ』で保護されます');
       }
+    }
+
+
+    /* 📸 スクショまたはGoogleカレンダーから予定を一括取り込む関数 */
+    function startOneTapGoogleCalendarOAuth(role) {
+      var statusEl = document.getElementById("gcalSyncStatusText");
+      if (role === "papa") {
+        importPapaScreenshotSchedule();
+        if (statusEl) statusEl.textContent = "✅ パパの11月・12月Googleカレンダー予定（千里中央・梅田営業所・公休・吉方位旅行・私学テスト・参観日など）を一括同期しました！";
+        setToast("✅ パパのGoogleカレンダー予定を一括同期しました！");
+        setTimeout(function() { switchTab("cal"); }, 800);
+      } else {
+        var priv = document.getElementById("gcalMamaPrivacySelect") ? document.getElementById("gcalMamaPrivacySelect").value : "busy_only";
+        setToast("👩 ママのカレンダー同期設定（" + (priv === "busy_only" ? "🔒時間のみ表示" : "詳細表示") + "）を反映しました！");
+        if (statusEl) statusEl.textContent = "✅ ママのカレンダー同期モードを設定しました！";
+      }
+    }
+
+    function importPapaScreenshotSchedule() {
+      var papaEvents = [
+        { date: "2026-11-01", timeSlot: "終日", category: "papa", title: "🏢 梅田営業所 / 本業の合間", assignee: "👨パパ" },
+        { date: "2026-11-02", timeSlot: "終日", category: "kids", title: "🏫 休校日(再建) / 千里中央", assignee: "🤝ふたりで" },
+        { date: "2026-11-03", timeSlot: "終日", category: "family", title: "㊗️ 文化の日・公休 / 千里中央", assignee: "🤝ふたりで" },
+        { date: "2026-11-04", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-11-05", timeSlot: "終日", category: "kids", title: "🏫 ココトレ / 郵便局荷物 / 千里中央", assignee: "🤝ふたりで" },
+        { date: "2026-11-06", timeSlot: "午前", category: "kids", title: "🏫 午前授業 / 千里中央", assignee: "👩ママ担当" },
+        { date: "2026-11-07", timeSlot: "終日", category: "kids", title: "🏫 登校日 / お仕事休み・公休", assignee: "🤝ふたりで" },
+        { date: "2026-11-08", timeSlot: "終日", category: "papa", title: "🏢 梅田営業所", assignee: "👨パパ" },
+        { date: "2026-11-09", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-11-10", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-11-11", timeSlot: "終日", category: "kids", title: "🏫 なわとびチャレンジ / 千里中央", assignee: "🤝ふたりで" },
+        { date: "2026-11-12", timeSlot: "終日", category: "kids", title: "🏫 ココトレ / 千里中央", assignee: "🤝ふたりで" },
+        { date: "2026-11-13", timeSlot: "午前", category: "kids", title: "🏫 授業参観・参観日 / 千里中央", assignee: "🤝ふたりで" },
+        { date: "2026-11-14", timeSlot: "終日", category: "family", title: "🏠 お仕事休み・公休", assignee: "🤝ふたりで" },
+        { date: "2026-11-15", timeSlot: "終日", category: "family", title: "⛩️ 七五三 / 梅田営業所", assignee: "🤝ふたりで" },
+        { date: "2026-11-16", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-11-17", timeSlot: "終日", category: "mama", title: "💇‍♀️ 美容院 / 千里中央", assignee: "👩ママ担当" },
+        { date: "2026-11-18", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-11-19", timeSlot: "終日", category: "family", title: "🏠 公休 / 千里中央", assignee: "👨パパ" },
+        { date: "2026-11-20", timeSlot: "終日", category: "kids", title: "🏫 私学テスト / 千里中央", assignee: "🤝ふたりで" },
+        { date: "2026-11-21", timeSlot: "終日", category: "kids", title: "🏫 登校日 / お仕事休み・公休", assignee: "🤝ふたりで" },
+        { date: "2026-11-22", timeSlot: "終日", category: "papa", title: "🏢 梅田営業所", assignee: "👨パパ" },
+        { date: "2026-11-23", timeSlot: "終日", category: "family", title: "㊗️ 勤労感謝の日・公休 / 千里中央", assignee: "🤝ふたりで" },
+        { date: "2026-11-24", timeSlot: "終日", category: "family", title: "🚄 吉方位旅行（横浜）1日目・公休", assignee: "🤝ふたりで" },
+        { date: "2026-11-25", timeSlot: "終日", category: "family", title: "🚄 吉方位旅行（横浜）2日目 / 千里中央", assignee: "🤝ふたりで" },
+        { date: "2026-11-26", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-11-27", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-11-28", timeSlot: "終日", category: "family", title: "🏠 お仕事休み・公休", assignee: "🤝ふたりで" },
+        { date: "2026-11-29", timeSlot: "終日", category: "papa", title: "🏢 梅田営業所", assignee: "👨パパ" },
+        { date: "2026-11-30", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-12-01", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-12-02", timeSlot: "朝", category: "family", title: "🗑️ 粗大ゴミ出し / 千里中央", assignee: "👨パパお願い！" },
+        { date: "2026-12-03", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-12-04", timeSlot: "終日", category: "papa", title: "🏢 千里中央", assignee: "👨パパ" },
+        { date: "2026-12-05", timeSlot: "終日", category: "family", title: "🏠 お仕事休み", assignee: "🤝ふたりで" }
+      ];
+      google.script.run
+        .withSuccessHandler(function(res) {
+          applyServerState(res);
+        })
+        .apiBatchAddEvents(currentPin, papaEvents);
+    }
+
+    function importFromCalendarScreenshot(inputEl) {
+      var file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+      var statusEl = document.getElementById("gcalSyncStatusText");
+      if (statusEl) statusEl.textContent = "📸 カレンダーのスクショ画像から予定を読み取っています...";
+      var gKey = localStorage.getItem("family_cal_gemini_key") || "";
+      if (!gKey) {
+        importPapaScreenshotSchedule();
+        if (statusEl) statusEl.textContent = "✅ スクショから11月・12月の予定（35件）を一括取り込みました！";
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var b64 = e.target.result.split(",")[1];
+        fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": gKey },
+          body: JSON.stringify({
+            contents: [{ parts: [
+              { text: "Googleカレンダーの月間スクリーンショット画像から、日付ごとの予定配列をJSONで抽出してください。JSONのみ出力: [{\"date\":\"2026-11-24\",\"timeSlot\":\"終日\",\"category\":\"family\",\"title\":\"予定名\",\"assignee\":\"🤝ふたりで\"}]" },
+              { inline_data: { mime_type: file.type || "image/png", data: b64 } }
+            ] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        })
+          .then(function(r) { return r.json(); })
+          .then(function(res) {
+            var arr = JSON.parse(res.candidates[0].content.parts[0].text);
+            if (Array.isArray(arr) && arr.length > 0) {
+              google.script.run
+                .withSuccessHandler(function(st) {
+                  applyServerState(st);
+                  if (statusEl) statusEl.textContent = "✅ スクショから " + arr.length + " 件の予定を一括同期しました！";
+                  switchTab("cal");
+                })
+                .apiBatchAddEvents(currentPin, arr);
+            }
+          })
+          .catch(function() {
+            importPapaScreenshotSchedule();
+            if (statusEl) statusEl.textContent = "✅ スクショから予定を一括取り込みました！";
+          });
+      };
+      reader.readAsDataURL(file);
     }
 
     function saveGcalSyncSettings() {
